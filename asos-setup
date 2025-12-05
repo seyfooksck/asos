@@ -1,10 +1,14 @@
 ﻿#!/bin/bash
 
 # ASOS - Server Management Panel Setup Script
-# Kullanım: wget -qO- https://raw.githubusercontent.com/seyfooksck/asos/main/asos-setup | bash
-# veya: curl -sL https://raw.githubusercontent.com/seyfooksck/asos/main/asos-setup | bash
+# Kullanım: wget -qO- https://raw.githubusercontent.com/seyfooksck/asos/main/asos-setup | sudo bash -s
+# veya: curl -sL https://raw.githubusercontent.com/seyfooksck/asos/main/asos-setup | sudo bash -s
+# veya: wget -O asos-setup https://raw.githubusercontent.com/seyfooksck/asos/main/asos-setup && sudo bash asos-setup
 
 set -e
+
+# Pipe üzerinden çalışırken stdin'i /dev/tty'den al
+exec < /dev/tty
 
 # Renkler
 RED='\033[0;31m'
