@@ -12,6 +12,19 @@ const packageJson = require('../../package.json');
 const CURRENT_VERSION = packageJson.version;
 const GITHUB_REPO = 'seyfooksck/asos'; // GitHub repo for updates
 
+// Cache for system stats (hızlı yanıt için)
+let statsCache = {
+  data: null,
+  timestamp: 0,
+  ttl: 2000 // 2 saniye cache
+};
+
+let updateCache = {
+  data: null,
+  timestamp: 0,
+  ttl: 300000 // 5 dakika cache
+};
+
 class SystemController {
   /**
    * Sistem bilgisi
@@ -54,57 +67,36 @@ class SystemController {
   }
 
   /**
-   * Sistem istatistikleri (CPU, RAM, Disk)
+   * Sistem istatistikleri (CPU, RAM, Disk) - Cache destekli
    * GET /api/system/stats
    */
   async getStats(req, res) {
     try {
-      // CPU usage
-      const cpus = os.cpus();
-      let totalIdle = 0, totalTick = 0;
+      const now = Date.now();
       
-      for (const cpu of cpus) {
-        for (const type in cpu.times) {
-          totalTick += cpu.times[type];
-        }
-        totalIdle += cpu.times.idle;
+      // Cache kontrolü
+      if (statsCache.data && (now - statsCache.timestamp) < statsCache.ttl) {
+        return res.json({ success: true, data: statsCache.data, cached: true });
       }
+
+      // Paralel olarak tüm verileri al
+      const [cpuData, memData, diskData] = await Promise.all([
+        this.getCpuUsage(),
+        this.getMemoryUsage(),
+        this.getDiskUsage()
+      ]);
+
+      const data = {
+        cpu: cpuData,
+        memory: memData,
+        disk: diskData
+      };
+
+      // Cache'e kaydet
+      statsCache.data = data;
+      statsCache.timestamp = now;
       
-      const cpuUsage = 100 - Math.round(100 * totalIdle / totalTick);
-      
-      // Memory usage
-      const totalMem = os.totalmem();
-      const freeMem = os.freemem();
-      const usedMem = totalMem - freeMem;
-      
-      // Disk usage
-      let disk = { total: 0, used: 0, free: 0, usedPercent: 0 };
-      try {
-        const { stdout } = await execAsync("df -B1 / | tail -1 | awk '{print $2,$3,$4}'");
-        const parts = stdout.trim().split(/\s+/);
-        disk = {
-          total: parseInt(parts[0]),
-          used: parseInt(parts[1]),
-          free: parseInt(parts[2]),
-          usedPercent: (parseInt(parts[1]) / parseInt(parts[0])) * 100
-        };
-      } catch (e) {
-        // Ignore disk errors on Windows
-      }
-      
-      res.json({
-        success: true,
-        data: {
-          cpu: cpuUsage,
-          memory: {
-            total: totalMem,
-            used: usedMem,
-            free: freeMem,
-            usedPercent: (usedMem / totalMem) * 100
-          },
-          disk: disk
-        }
-      });
+      res.json({ success: true, data });
     } catch (error) {
       logger.error('Sistem istatistikleri hatası:', error);
       res.status(500).json({ success: false, error: 'İstatistikler alınamadı' });
@@ -112,12 +104,69 @@ class SystemController {
   }
 
   /**
-   * Güncelleme kontrolü
+   * CPU kullanımı
+   */
+  getCpuUsage() {
+    const cpus = os.cpus();
+    let totalIdle = 0, totalTick = 0;
+    
+    for (const cpu of cpus) {
+      for (const type in cpu.times) {
+        totalTick += cpu.times[type];
+      }
+      totalIdle += cpu.times.idle;
+    }
+    
+    return 100 - Math.round(100 * totalIdle / totalTick);
+  }
+
+  /**
+   * Memory kullanımı
+   */
+  getMemoryUsage() {
+    const totalMem = os.totalmem();
+    const freeMem = os.freemem();
+    const usedMem = totalMem - freeMem;
+    
+    return {
+      total: totalMem,
+      used: usedMem,
+      free: freeMem,
+      usedPercent: (usedMem / totalMem) * 100
+    };
+  }
+
+  /**
+   * Disk kullanımı
+   */
+  async getDiskUsage() {
+    try {
+      const { stdout } = await execAsync("df -B1 / | tail -1 | awk '{print $2,$3,$4}'", { timeout: 2000 });
+      const parts = stdout.trim().split(/\s+/);
+      return {
+        total: parseInt(parts[0]),
+        used: parseInt(parts[1]),
+        free: parseInt(parts[2]),
+        usedPercent: (parseInt(parts[1]) / parseInt(parts[0])) * 100
+      };
+    } catch (e) {
+      return { total: 0, used: 0, free: 0, usedPercent: 0 };
+    }
+  }
+
+  /**
+   * Güncelleme kontrolü - Cache destekli
    * GET /api/system/check-update
    */
   async checkUpdate(req, res) {
     try {
-      // Simulate update check (in production, check GitHub releases)
+      const now = Date.now();
+      
+      // Cache kontrolü (5 dakika)
+      if (updateCache.data && (now - updateCache.timestamp) < updateCache.ttl) {
+        return res.json({ success: true, data: updateCache.data, cached: true });
+      }
+
       const updateData = {
         currentVersion: CURRENT_VERSION,
         latestVersion: CURRENT_VERSION,
@@ -136,9 +185,12 @@ class SystemController {
           updateData.downloadUrl = latestRelease.zipball_url;
         }
       } catch (e) {
-        // GitHub check failed, assume no update
         logger.warn('GitHub güncelleme kontrolü başarısız:', e.message);
       }
+      
+      // Cache'e kaydet
+      updateCache.data = updateData;
+      updateCache.timestamp = now;
       
       res.json({ success: true, data: updateData });
     } catch (error) {

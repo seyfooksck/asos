@@ -1,15 +1,42 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
 const router = express.Router();
 
-// Auth middleware for pages
-const ensureAuth = (req, res, next) => {
-  if (req.session.user) {
+const JWT_SECRET = process.env.JWT_SECRET || 'asos-secret-key';
+const JWT_EXPIRES = '7d'; // 7 gün
+
+// Auth middleware for pages - hem session hem JWT cookie kontrolü
+const ensureAuth = async (req, res, next) => {
+  // Session kontrolü
+  if (req.session && req.session.user) {
     return next();
   }
-  req.flash('error_msg', 'Lütfen giriş yapın');
+  
+  // JWT cookie kontrolü
+  const token = req.cookies.asos_token;
+  if (token) {
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET);
+      const user = await User.findById(decoded.userId);
+      if (user && user.isActive) {
+        // Session'ı yeniden oluştur
+        req.session.user = {
+          _id: user._id,
+          email: user.email,
+          name: user.name,
+          role: user.role
+        };
+        return next();
+      }
+    } catch (err) {
+      // Token geçersiz, cookie'yi sil
+      res.clearCookie('asos_token');
+    }
+  }
+  
   res.redirect('/login');
 };
 
@@ -22,7 +49,7 @@ const ensureAdmin = (req, res, next) => {
 };
 
 const ensureGuest = (req, res, next) => {
-  if (!req.session.user) {
+  if (!req.session.user && !req.cookies.asos_token) {
     return next();
   }
   res.redirect('/dashboard');
@@ -39,7 +66,7 @@ router.get('/login', ensureGuest, (req, res) => {
 // Login POST
 router.post('/login', ensureGuest, async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, remember } = req.body;
     
     console.log('Login attempt for:', email);
     
@@ -74,6 +101,13 @@ router.post('/login', ensureGuest, async (req, res) => {
       });
     }
 
+    // JWT token oluştur
+    const token = jwt.sign(
+      { userId: user._id, email: user.email, role: user.role },
+      JWT_SECRET,
+      { expiresIn: JWT_EXPIRES }
+    );
+
     // Set session
     req.session.user = {
       _id: user._id,
@@ -98,7 +132,17 @@ router.post('/login', ensureGuest, async (req, res) => {
           error: 'Oturum kaydedilirken bir hata oluştu'
         });
       }
-      console.log('Session saved, redirecting to dashboard');
+      
+      // JWT token'ı cookie'ye kaydet (7 gün veya session)
+      const cookieOptions = {
+        httpOnly: true,
+        secure: false, // HTTPS için true yapın
+        sameSite: 'lax',
+        maxAge: remember ? 7 * 24 * 60 * 60 * 1000 : undefined // Beni hatırla: 7 gün
+      };
+      
+      res.cookie('asos_token', token, cookieOptions);
+      console.log('Session and JWT saved, redirecting to dashboard');
       res.redirect('/dashboard');
     });
   } catch (error) {
@@ -113,6 +157,9 @@ router.post('/login', ensureGuest, async (req, res) => {
 
 // Logout
 router.get('/logout', (req, res) => {
+  // JWT cookie'yi temizle
+  res.clearCookie('asos_token');
+  
   req.session.destroy((err) => {
     if (err) {
       console.error('Logout error:', err);
