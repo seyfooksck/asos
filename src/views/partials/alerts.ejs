@@ -1,25 +1,25 @@
-<% if (typeof success !== 'undefined' && success) { %>
+<% if (typeof success !== 'undefined' && success && success.length > 0) { %>
 <div class="alert alert-success alert-dismissible alert-label-icon label-arrow fade show" role="alert">
     <i class="ri-check-double-line label-icon"></i><strong>Başarılı!</strong> <%= success %>
     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
 </div>
 <% } %>
 
-<% if (typeof error !== 'undefined' && error) { %>
+<% if (typeof error !== 'undefined' && error && error.length > 0) { %>
 <div class="alert alert-danger alert-dismissible alert-label-icon label-arrow fade show" role="alert">
     <i class="ri-error-warning-line label-icon"></i><strong>Hata!</strong> <%= error %>
     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
 </div>
 <% } %>
 
-<% if (typeof warning !== 'undefined' && warning) { %>
+<% if (typeof warning !== 'undefined' && warning && warning.length > 0) { %>
 <div class="alert alert-warning alert-dismissible alert-label-icon label-arrow fade show" role="alert">
     <i class="ri-alert-line label-icon"></i><strong>Uyarı!</strong> <%= warning %>
     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
 </div>
 <% } %>
 
-<% if (typeof info !== 'undefined' && info) { %>
+<% if (typeof info !== 'undefined' && info && info.length > 0) { %>
 <div class="alert alert-info alert-dismissible alert-label-icon label-arrow fade show" role="alert">
     <i class="ri-information-line label-icon"></i><strong>Bilgi:</strong> <%= info %>
     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
