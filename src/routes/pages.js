@@ -87,7 +87,20 @@ router.post('/login', ensureGuest, async (req, res) => {
     await user.save();
 
     console.log('Login successful for:', email);
-    res.redirect('/dashboard');
+    
+    // Session'ı kaydet ve sonra redirect yap
+    req.session.save((err) => {
+      if (err) {
+        console.error('Session save error:', err);
+        return res.render('auth/login', {
+          layout: 'layouts/auth',
+          title: 'Giriş',
+          error: 'Oturum kaydedilirken bir hata oluştu'
+        });
+      }
+      console.log('Session saved, redirecting to dashboard');
+      res.redirect('/dashboard');
+    });
   } catch (error) {
     console.error('Login error:', error);
     return res.render('auth/login', {
