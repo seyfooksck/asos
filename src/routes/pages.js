@@ -41,21 +41,37 @@ router.post('/login', ensureGuest, async (req, res) => {
   try {
     const { email, password } = req.body;
     
-    const user = await User.findOne({ email });
+    console.log('Login attempt for:', email);
+    
+    const user = await User.findOne({ email: email.toLowerCase().trim() });
     if (!user) {
-      req.flash('error_msg', 'Geçersiz e-posta veya şifre');
-      return res.redirect('/login');
+      console.log('User not found:', email);
+      return res.render('auth/login', {
+        layout: 'layouts/auth',
+        title: 'Giriş',
+        error: 'Geçersiz e-posta veya şifre'
+      });
     }
 
+    console.log('User found:', user.email, 'isActive:', user.isActive);
+
     if (!user.isActive) {
-      req.flash('error_msg', 'Hesabınız devre dışı bırakılmış');
-      return res.redirect('/login');
+      return res.render('auth/login', {
+        layout: 'layouts/auth',
+        title: 'Giriş',
+        error: 'Hesabınız devre dışı bırakılmış'
+      });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
+    console.log('Password match:', isMatch);
+    
     if (!isMatch) {
-      req.flash('error_msg', 'Geçersiz e-posta veya şifre');
-      return res.redirect('/login');
+      return res.render('auth/login', {
+        layout: 'layouts/auth',
+        title: 'Giriş',
+        error: 'Geçersiz e-posta veya şifre'
+      });
     }
 
     // Set session
@@ -70,12 +86,15 @@ router.post('/login', ensureGuest, async (req, res) => {
     user.lastLogin = new Date();
     await user.save();
 
-    req.flash('success_msg', 'Başarıyla giriş yaptınız');
+    console.log('Login successful for:', email);
     res.redirect('/dashboard');
   } catch (error) {
     console.error('Login error:', error);
-    req.flash('error_msg', 'Giriş yapılırken bir hata oluştu');
-    res.redirect('/login');
+    return res.render('auth/login', {
+      layout: 'layouts/auth',
+      title: 'Giriş',
+      error: 'Giriş yapılırken bir hata oluştu'
+    });
   }
 });
 

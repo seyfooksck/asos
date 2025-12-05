@@ -147,16 +147,24 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/asos')
     
     if (!adminExists) {
       const bcrypt = require('bcryptjs');
-      const hashedPassword = await bcrypt.hash(process.env.ADMIN_PASSWORD || 'admin123', 10);
+      const adminEmail = (process.env.ADMIN_EMAIL || 'admin@localhost').toLowerCase().trim();
+      const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
+      
+      logger.info('Admin kullanıcısı oluşturuluyor: ' + adminEmail);
+      
+      const hashedPassword = await bcrypt.hash(adminPassword, 10);
       
       await User.create({
-        email: process.env.ADMIN_EMAIL || 'admin@localhost',
+        email: adminEmail,
         password: hashedPassword,
         name: 'Admin',
-        role: 'admin'
+        role: 'admin',
+        isActive: true
       });
       
-      logger.info('Admin kullanıcısı oluşturuldu');
+      logger.info('Admin kullanıcısı oluşturuldu: ' + adminEmail);
+    } else {
+      logger.info('Admin kullanıcısı zaten mevcut: ' + adminExists.email);
     }
     
     server.listen(PORT, () => {
