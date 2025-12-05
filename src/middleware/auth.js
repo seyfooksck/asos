@@ -3,6 +3,16 @@ const User = require('../models/User');
 
 const auth = async (req, res, next) => {
   try {
+    // Önce session kontrolü (web UI için)
+    if (req.session && req.session.user) {
+      const user = await User.findById(req.session.user._id);
+      if (user && user.isActive) {
+        req.user = user;
+        return next();
+      }
+    }
+    
+    // JWT token kontrolü (API için)
     const token = req.header('Authorization')?.replace('Bearer ', '');
     
     if (!token) {
