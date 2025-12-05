@@ -702,13 +702,14 @@ Type=simple
 User=asos
 Group=asos
 WorkingDirectory=/opt/asos
-ExecStart=/usr/bin/node src/server.js
+ExecStart=/usr/bin/node src/cluster.js
 Restart=always
 RestartSec=10
 StandardOutput=journal
 StandardError=journal
 SyslogIdentifier=asos
 Environment=NODE_ENV=production
+Environment=CLUSTER_WORKERS=2
 
 [Install]
 WantedBy=multi-user.target

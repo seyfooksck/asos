@@ -8,9 +8,14 @@ const http = require('http');
 const { Server } = require('socket.io');
 const expressLayouts = require('express-ejs-layouts');
 const session = require('express-session');
+const MongoStore = require('connect-mongo');
 const cookieParser = require('cookie-parser');
 const flash = require('connect-flash');
 const logger = require('./utils/logger');
+const cluster = require('cluster');
+
+// Worker ID for logging
+const workerId = cluster.isWorker ? cluster.worker.id : 'main';
 
 // API Routes
 const authRoutes = require('./routes/auth');
@@ -49,11 +54,19 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// Session
+// MongoDB URI
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/asos';
+
+// Session with MongoDB Store (cluster için gerekli)
 app.use(session({
   secret: process.env.JWT_SECRET || 'asos-secret-key',
   resave: false,
   saveUninitialized: false,
+  store: MongoStore.create({
+    mongoUrl: MONGODB_URI,
+    ttl: 24 * 60 * 60, // 1 gün
+    autoRemove: 'native'
+  }),
   cookie: {
     secure: false, // HTTPS için true yapın
     httpOnly: true,
@@ -138,52 +151,51 @@ app.use((err, req, res, next) => {
 // MongoDB bağlantısı ve sunucu başlatma
 const PORT = process.env.PORT || 3000;
 
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/asos')
+mongoose.connect(MONGODB_URI)
   .then(async () => {
-    logger.info('MongoDB bağlantısı başarılı');
+    logger.info(`[Worker ${workerId}] MongoDB bağlantısı başarılı`);
     
-    // İlk admin kullanıcısını oluştur
-    const User = require('./models/User');
-    const adminExists = await User.findOne({ role: 'admin' });
-    
-    if (!adminExists) {
-      const bcrypt = require('bcryptjs');
-      const adminEmail = (process.env.ADMIN_EMAIL || 'admin@localhost').toLowerCase().trim();
-      const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
+    // Sadece ilk worker admin oluştursun (race condition önleme)
+    if (!cluster.isWorker || cluster.worker.id === 1) {
+      const User = require('./models/User');
+      const adminExists = await User.findOne({ role: 'admin' });
       
-      logger.info('Admin kullanıcısı oluşturuluyor: ' + adminEmail);
-      
-      const hashedPassword = await bcrypt.hash(adminPassword, 10);
-      
-      await User.create({
-        email: adminEmail,
-        password: hashedPassword,
-        name: 'Admin',
-        role: 'admin',
-        isActive: true
-      });
-      
-      logger.info('Admin kullanıcısı oluşturuldu: ' + adminEmail);
-    } else {
-      logger.info('Admin kullanıcısı zaten mevcut: ' + adminExists.email);
+      if (!adminExists) {
+        const bcrypt = require('bcryptjs');
+        const adminEmail = (process.env.ADMIN_EMAIL || 'admin@localhost').toLowerCase().trim();
+        const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
+        
+        logger.info('Admin kullanıcısı oluşturuluyor: ' + adminEmail);
+        
+        const hashedPassword = await bcrypt.hash(adminPassword, 10);
+        
+        await User.create({
+          email: adminEmail,
+          password: hashedPassword,
+          name: 'Admin',
+          role: 'admin',
+          isActive: true
+        });
+        
+        logger.info('Admin kullanıcısı oluşturuldu: ' + adminEmail);
+      }
     }
     
     server.listen(PORT, () => {
-      logger.info(`ASOS Panel ${PORT} portunda çalışıyor`);
-      logger.info(`Panel: http://localhost:${PORT}`);
+      logger.info(`[Worker ${workerId}] ASOS Panel ${PORT} portunda çalışıyor`);
     });
   })
   .catch((err) => {
-    logger.error('MongoDB bağlantı hatası:', err);
+    logger.error(`[Worker ${workerId}] MongoDB bağlantı hatası:`, err);
     process.exit(1);
   });
 
 // Graceful shutdown
 process.on('SIGTERM', () => {
-  logger.info('SIGTERM sinyali alındı, kapatılıyor...');
+  logger.info(`[Worker ${workerId}] SIGTERM sinyali alındı, kapatılıyor...`);
   server.close(() => {
     mongoose.connection.close(false, () => {
-      logger.info('Bağlantılar kapatıldı');
+      logger.info(`[Worker ${workerId}] Bağlantılar kapatıldı`);
       process.exit(0);
     });
   });
