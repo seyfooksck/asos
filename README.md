@@ -31,20 +31,20 @@ Cloudron benzeri bir self-hosted domain/mail yönetim paneli. Docker ile uygulam
 Tek komutla kurulum (Cloudron tarzı):
 
 ```bash
-wget -qO- https://raw.githubusercontent.com/USER/asos/main/asos-setup | sudo bash
+wget -qO- https://raw.githubusercontent.com/seyfooksck/asos/main/asos-setup | sudo bash
 ```
 
 veya curl ile:
 
 ```bash
-curl -sL https://raw.githubusercontent.com/USER/asos/main/asos-setup | sudo bash
+curl -sL https://raw.githubusercontent.com/seyfooksck/asos/main/asos-setup | sudo bash
 ```
 
 ### Adım Adım Kurulum
 
 ```bash
 # 1. Script'i indirin
-wget https://raw.githubusercontent.com/USER/asos/main/asos-setup
+wget https://raw.githubusercontent.com/seyfooksck/asos/main/asos-setup
 
 # 2. Çalıştırılabilir yapın
 chmod +x asos-setup
@@ -64,7 +64,7 @@ Kurulum interaktif olarak size aşağıdaki bilgileri soracak:
 
 ```bash
 # Projeyi klonlayın
-git clone https://github.com/USER/asos.git /opt/asos
+git clone https://github.com/seyfooksck/asos.git /opt/asos
 cd /opt/asos
 
 # Bağımlılıkları yükleyin
