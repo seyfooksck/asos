@@ -1,0 +1,367 @@
+:root {
+  --sidebar-width: 250px;
+  --primary-color: #0d6efd;
+  --dark-bg: #212529;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f8f9fa;
+}
+
+/* Sidebar */
+#sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: var(--sidebar-width);
+  height: 100vh;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  z-index: 1000;
+}
+
+.sidebar-header {
+  padding: 20px;
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-header h3 {
+  font-size: 1.5rem;
+}
+
+#sidebar .nav {
+  flex: 1;
+  padding: 15px 0;
+}
+
+#sidebar .nav-link {
+  color: rgba(255, 255, 255, 0.7);
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.3s;
+}
+
+#sidebar .nav-link:hover {
+  color: white;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+#sidebar .nav-link.active {
+  color: white;
+  background-color: var(--primary-color);
+}
+
+#sidebar .nav-link i {
+  font-size: 1.2rem;
+}
+
+.sidebar-footer {
+  padding: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-info i {
+  font-size: 1.5rem;
+}
+
+/* Main Content */
+#content {
+  margin-left: var(--sidebar-width);
+  padding: 30px;
+  min-height: 100vh;
+}
+
+/* Cards */
+.card {
+  border: none;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.card-header {
+  background-color: white;
+  border-bottom: 1px solid #eee;
+  font-weight: 600;
+  padding: 15px 20px;
+}
+
+.card-body {
+  padding: 20px;
+}
+
+/* Stats Cards */
+.card.bg-primary,
+.card.bg-success,
+.card.bg-warning,
+.card.bg-info {
+  border-radius: 15px;
+}
+
+.card .display-4 {
+  opacity: 0.5;
+}
+
+/* Tables */
+.table {
+  margin-bottom: 0;
+}
+
+.table thead th {
+  border-top: none;
+  font-weight: 600;
+  color: #666;
+  padding: 15px;
+}
+
+.table tbody td {
+  padding: 15px;
+  vertical-align: middle;
+}
+
+/* Badges */
+.badge {
+  padding: 6px 12px;
+  font-weight: 500;
+}
+
+/* App Cards */
+.app-card {
+  border: none;
+  border-radius: 15px;
+  transition: transform 0.3s, box-shadow 0.3s;
+  cursor: pointer;
+}
+
+.app-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+}
+
+.app-card .card-body {
+  text-align: center;
+  padding: 25px;
+}
+
+.app-card .app-icon {
+  font-size: 3rem;
+  margin-bottom: 15px;
+  color: var(--primary-color);
+}
+
+.app-card .app-name {
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+.app-card .app-category {
+  font-size: 0.85rem;
+  color: #888;
+}
+
+/* Service Status */
+.service-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.service-item:last-child {
+  border-bottom: none;
+}
+
+.service-name {
+  font-weight: 500;
+}
+
+.service-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.status-dot.running {
+  background-color: #28a745;
+}
+
+.status-dot.stopped {
+  background-color: #dc3545;
+}
+
+/* Container Items */
+.container-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.container-item:last-child {
+  border-bottom: none;
+}
+
+.container-name {
+  font-weight: 500;
+}
+
+.container-status {
+  font-size: 0.85rem;
+}
+
+/* Buttons */
+.btn {
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-weight: 500;
+}
+
+.btn-sm {
+  padding: 4px 10px;
+  font-size: 0.85rem;
+}
+
+/* Modal */
+.modal-content {
+  border: none;
+  border-radius: 15px;
+}
+
+.modal-header {
+  border-radius: 15px 15px 0 0;
+}
+
+/* Toast */
+.toast {
+  border-radius: 10px;
+}
+
+/* Logs */
+#logContent {
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 0.85rem;
+  border-radius: 10px;
+}
+
+/* Loading Spinner */
+.spinner-border-sm {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* Docker Tabs */
+#dockerTabs .nav-link {
+  border-radius: 8px 8px 0 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  #sidebar {
+    width: 100%;
+    height: auto;
+    position: relative;
+  }
+
+  #content {
+    margin-left: 0;
+  }
+
+  .sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  #sidebar .nav {
+    display: flex;
+    flex-wrap: wrap;
+    padding: 10px;
+  }
+
+  #sidebar .nav-item {
+    flex: 1;
+    min-width: 100px;
+  }
+
+  #sidebar .nav-link {
+    justify-content: center;
+    padding: 10px;
+  }
+
+  .sidebar-footer {
+    display: none;
+  }
+}
+
+/* Action Buttons */
+.action-btns {
+  display: flex;
+  gap: 5px;
+}
+
+.action-btns .btn {
+  padding: 4px 8px;
+}
+
+/* System Info */
+#systemInfo table {
+  width: 100%;
+}
+
+#systemInfo td {
+  padding: 8px 0;
+}
+
+#systemInfo td:first-child {
+  font-weight: 500;
+  width: 40%;
+}
+
+/* Installed App Badge */
+.installed-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: #28a745;
+  color: white;
+  padding: 3px 8px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+}
+
+/* App Details */
+.app-details {
+  background: #f8f9fa;
+  border-radius: 10px;
+  padding: 15px;
+  margin-top: 15px;
+}

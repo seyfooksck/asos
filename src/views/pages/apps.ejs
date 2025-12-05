@@ -1,0 +1,431 @@
+<!-- Page Title -->
+<div class="row">
+    <div class="col-12">
+        <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+            <h4 class="mb-sm-0">Uygulama Mağazası</h4>
+            <div class="page-title-right">
+                <ol class="breadcrumb m-0">
+                    <li class="breadcrumb-item"><a href="/">ASOS</a></li>
+                    <li class="breadcrumb-item active">Uygulamalar</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tabs -->
+<ul class="nav nav-tabs nav-tabs-custom nav-primary mb-3" role="tablist">
+    <li class="nav-item">
+        <a class="nav-link active" data-bs-toggle="tab" href="#installedApps" role="tab">
+            <i class="ri-apps-line me-1"></i> Kurulu Uygulamalar
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" data-bs-toggle="tab" href="#appStore" role="tab">
+            <i class="ri-store-2-line me-1"></i> Uygulama Mağazası
+        </a>
+    </li>
+</ul>
+
+<div class="tab-content">
+    <!-- Installed Apps Tab -->
+    <div class="tab-pane active" id="installedApps" role="tabpanel">
+        <div class="row" id="installedAppsList">
+            <div class="col-12 text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Yükleniyor...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- App Store Tab -->
+    <div class="tab-pane" id="appStore" role="tabpanel">
+        <!-- Categories -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex flex-wrap gap-2">
+                    <button class="btn btn-soft-primary active" onclick="filterApps('all', this)">Tümü</button>
+                    <button class="btn btn-soft-primary" onclick="filterApps('cms', this)">CMS</button>
+                    <button class="btn btn-soft-primary" onclick="filterApps('collaboration', this)">İşbirliği</button>
+                    <button class="btn btn-soft-primary" onclick="filterApps('productivity', this)">Verimlilik</button>
+                    <button class="btn btn-soft-primary" onclick="filterApps('development', this)">Geliştirme</button>
+                    <button class="btn btn-soft-primary" onclick="filterApps('monitoring', this)">İzleme</button>
+                    <button class="btn btn-soft-primary" onclick="filterApps('database', this)">Veritabanı</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="row" id="appStoreList">
+            <div class="col-12 text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Yükleniyor...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Install App Modal -->
+<div class="modal fade" id="installAppModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Uygulama Kur</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="installAppForm">
+                <div class="modal-body">
+                    <input type="hidden" name="appId" id="installAppId">
+                    <div class="text-center mb-4">
+                        <img id="installAppIcon" src="" alt="" class="rounded" style="width: 64px; height: 64px;">
+                        <h5 class="mt-2" id="installAppName"></h5>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Domain</label>
+                        <select class="form-select" name="domain" id="installDomainSelect" required>
+                            <option value="">Domain seçin</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Subdomain (opsiyonel)</label>
+                        <input type="text" class="form-control" name="subdomain" placeholder="app">
+                        <small class="text-muted">Örn: app.domain.com</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="ri-download-line me-1"></i> Kur
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- App Logs Modal -->
+<div class="modal fade" id="appLogsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Uygulama Logları - <span id="logsAppName"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <pre id="appLogsContent" class="bg-dark text-light p-3 rounded" style="max-height: 400px; overflow-y: auto; font-size: 12px;"></pre>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Kapat</button>
+                <button type="button" class="btn btn-primary" onclick="refreshLogs()">
+                    <i class="ri-refresh-line me-1"></i> Yenile
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+var allApps = [];
+var currentLogsAppId = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+    loadInstalledApps();
+    loadAppStore();
+    loadDomains();
+
+    document.getElementById('installAppForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        installApp();
+    });
+});
+
+function loadInstalledApps() {
+    fetch('/api/apps/installed')
+        .then(r => r.json())
+        .then(data => {
+            var container = document.getElementById('installedAppsList');
+            if (!data.success || !data.data || data.data.length === 0) {
+                container.innerHTML = `
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-body text-center py-5">
+                                <i class="ri-apps-line fs-48 text-muted"></i>
+                                <h5 class="mt-3">Henüz uygulama kurulmamış</h5>
+                                <p class="text-muted">Uygulama mağazasından yeni bir uygulama kurun.</p>
+                                <a href="#appStore" class="btn btn-primary" data-bs-toggle="tab">
+                                    <i class="ri-store-2-line me-1"></i> Mağazaya Git
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = data.data.map(app => `
+                <div class="col-xl-4 col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="avatar-md flex-shrink-0">
+                                    <span class="avatar-title bg-primary-subtle rounded">
+                                        <img src="${app.icon || '/assets/images/apps/default.png'}" alt="" class="avatar-sm">
+                                    </span>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h5 class="fs-16 mb-1">${app.name}</h5>
+                                    <p class="text-muted mb-0">${app.domain}</p>
+                                </div>
+                                <div class="flex-shrink-0">
+                                    ${app.status === 'running' ? 
+                                        '<span class="badge bg-success-subtle text-success">Çalışıyor</span>' : 
+                                        '<span class="badge bg-danger-subtle text-danger">Durdu</span>'}
+                                </div>
+                            </div>
+                            <div class="mt-3 pt-3 border-top">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <a href="https://${app.domain}" target="_blank" class="btn btn-sm btn-soft-primary">
+                                            <i class="ri-external-link-line me-1"></i> Aç
+                                        </a>
+                                    </div>
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                            Yönet
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end">
+                                            ${app.status === 'running' ? `
+                                                <li><a class="dropdown-item" href="#" onclick="stopApp('${app._id}')">
+                                                    <i class="ri-stop-circle-line me-2 text-warning"></i>Durdur
+                                                </a></li>
+                                                <li><a class="dropdown-item" href="#" onclick="restartApp('${app._id}')">
+                                                    <i class="ri-restart-line me-2 text-info"></i>Yeniden Başlat
+                                                </a></li>
+                                            ` : `
+                                                <li><a class="dropdown-item" href="#" onclick="startApp('${app._id}')">
+                                                    <i class="ri-play-circle-line me-2 text-success"></i>Başlat
+                                                </a></li>
+                                            `}
+                                            <li><a class="dropdown-item" href="#" onclick="showAppLogs('${app._id}', '${app.name}')">
+                                                <i class="ri-file-list-line me-2"></i>Loglar
+                                            </a></li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li><a class="dropdown-item text-danger" href="#" onclick="uninstallApp('${app._id}')">
+                                                <i class="ri-delete-bin-line me-2"></i>Kaldır
+                                            </a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        });
+}
+
+function loadAppStore() {
+    fetch('/api/apps')
+        .then(r => r.json())
+        .then(data => {
+            allApps = data.data || [];
+            renderAppStore(allApps);
+        })
+        .catch(() => {
+            // Default apps if API fails
+            allApps = [
+                { id: 'wordpress', name: 'WordPress', category: 'cms', description: 'En popüler CMS', icon: '/assets/images/apps/wordpress.png' },
+                { id: 'nextcloud', name: 'Nextcloud', category: 'collaboration', description: 'Dosya paylaşım platformu', icon: '/assets/images/apps/nextcloud.png' },
+                { id: 'gitea', name: 'Gitea', category: 'development', description: 'Git deposu yönetimi', icon: '/assets/images/apps/gitea.png' },
+                { id: 'grafana', name: 'Grafana', category: 'monitoring', description: 'Metrik görselleştirme', icon: '/assets/images/apps/grafana.png' }
+            ];
+            renderAppStore(allApps);
+        });
+}
+
+function renderAppStore(apps) {
+    var container = document.getElementById('appStoreList');
+    if (apps.length === 0) {
+        container.innerHTML = `
+            <div class="col-12 text-center py-5">
+                <i class="ri-inbox-line fs-48 text-muted"></i>
+                <p class="text-muted mt-2">Bu kategoride uygulama bulunamadı</p>
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = apps.map(app => `
+        <div class="col-xl-3 col-md-4 col-sm-6">
+            <div class="card">
+                <div class="card-body text-center">
+                    <div class="avatar-lg mx-auto mb-3">
+                        <span class="avatar-title bg-light rounded">
+                            <img src="${app.icon || '/assets/images/apps/default.png'}" alt="" class="avatar-md">
+                        </span>
+                    </div>
+                    <h5 class="mb-1">${app.name}</h5>
+                    <p class="text-muted small mb-3">${app.description || ''}</p>
+                    <span class="badge bg-primary-subtle text-primary mb-3">${app.category || 'Genel'}</span>
+                    <div class="mt-3">
+                        <button class="btn btn-primary w-100" onclick="showInstallModal('${app.id || app._id}', '${app.name}', '${app.icon || ''}')">
+                            <i class="ri-download-line me-1"></i> Kur
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function filterApps(category, btn) {
+    document.querySelectorAll('.d-flex.flex-wrap .btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    if (category === 'all') {
+        renderAppStore(allApps);
+    } else {
+        renderAppStore(allApps.filter(a => a.category === category));
+    }
+}
+
+function loadDomains() {
+    fetch('/api/domains')
+        .then(r => r.json())
+        .then(data => {
+            var select = document.getElementById('installDomainSelect');
+            select.innerHTML = '<option value="">Domain seçin</option>';
+            if (data.success && data.data) {
+                data.data.forEach(d => {
+                    select.innerHTML += `<option value="${d.domain}">${d.domain}</option>`;
+                });
+            }
+        });
+}
+
+function showInstallModal(appId, appName, appIcon) {
+    document.getElementById('installAppId').value = appId;
+    document.getElementById('installAppName').textContent = appName;
+    document.getElementById('installAppIcon').src = appIcon || '/assets/images/apps/default.png';
+    new bootstrap.Modal(document.getElementById('installAppModal')).show();
+}
+
+function installApp() {
+    var form = document.getElementById('installAppForm');
+    var formData = new FormData(form);
+
+    Swal.fire({
+        title: 'Uygulama Kuruluyor...',
+        text: 'Lütfen bekleyin',
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading()
+    });
+
+    fetch('/api/apps/install', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            appId: formData.get('appId'),
+            domain: formData.get('domain'),
+            subdomain: formData.get('subdomain')
+        })
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.success) {
+            bootstrap.Modal.getInstance(document.getElementById('installAppModal')).hide();
+            form.reset();
+            loadInstalledApps();
+            Swal.fire('Başarılı!', 'Uygulama başarıyla kuruldu.', 'success');
+        } else {
+            Swal.fire('Hata!', res.error || 'Uygulama kurulamadı.', 'error');
+        }
+    })
+    .catch(() => Swal.fire('Hata!', 'Bağlantı hatası', 'error'));
+}
+
+function startApp(id) {
+    fetch(`/api/apps/installed/${id}/start`, { method: 'POST' })
+        .then(r => r.json())
+        .then(res => {
+            if (res.success) {
+                loadInstalledApps();
+                Swal.fire('Başarılı!', 'Uygulama başlatıldı.', 'success');
+            } else {
+                Swal.fire('Hata!', res.error, 'error');
+            }
+        });
+}
+
+function stopApp(id) {
+    fetch(`/api/apps/installed/${id}/stop`, { method: 'POST' })
+        .then(r => r.json())
+        .then(res => {
+            if (res.success) {
+                loadInstalledApps();
+                Swal.fire('Başarılı!', 'Uygulama durduruldu.', 'success');
+            } else {
+                Swal.fire('Hata!', res.error, 'error');
+            }
+        });
+}
+
+function restartApp(id) {
+    fetch(`/api/apps/installed/${id}/restart`, { method: 'POST' })
+        .then(r => r.json())
+        .then(res => {
+            if (res.success) {
+                loadInstalledApps();
+                Swal.fire('Başarılı!', 'Uygulama yeniden başlatıldı.', 'success');
+            } else {
+                Swal.fire('Hata!', res.error, 'error');
+            }
+        });
+}
+
+function showAppLogs(id, name) {
+    currentLogsAppId = id;
+    document.getElementById('logsAppName').textContent = name;
+    document.getElementById('appLogsContent').textContent = 'Loglar yükleniyor...';
+    new bootstrap.Modal(document.getElementById('appLogsModal')).show();
+    refreshLogs();
+}
+
+function refreshLogs() {
+    fetch(`/api/apps/installed/${currentLogsAppId}/logs`)
+        .then(r => r.json())
+        .then(res => {
+            document.getElementById('appLogsContent').textContent = res.data || 'Log bulunamadı.';
+        })
+        .catch(() => {
+            document.getElementById('appLogsContent').textContent = 'Loglar yüklenemedi.';
+        });
+}
+
+function uninstallApp(id) {
+    Swal.fire({
+        title: 'Emin misiniz?',
+        text: 'Bu uygulama ve tüm verileri kalıcı olarak silinecek!',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#f06548',
+        cancelButtonColor: '#878a99',
+        confirmButtonText: 'Evet, Kaldır',
+        cancelButtonText: 'İptal'
+    }).then(result => {
+        if (result.isConfirmed) {
+            fetch(`/api/apps/installed/${id}`, { method: 'DELETE' })
+                .then(r => r.json())
+                .then(res => {
+                    if (res.success) {
+                        loadInstalledApps();
+                        Swal.fire('Kaldırıldı!', 'Uygulama başarıyla kaldırıldı.', 'success');
+                    } else {
+                        Swal.fire('Hata!', res.error, 'error');
+                    }
+                });
+        }
+    });
+}
+</script>

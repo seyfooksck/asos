@@ -1,0 +1,153 @@
+<header id="page-topbar">
+    <div class="layout-width">
+        <div class="navbar-header">
+            <div class="d-flex">
+                <!-- LOGO -->
+                <div class="navbar-brand-box horizontal-logo">
+                    <a href="/" class="logo logo-dark">
+                        <span class="logo-sm">
+                            <img src="/assets/images/logo-sm.png" alt="" height="22">
+                        </span>
+                        <span class="logo-lg">
+                            <span class="logo-txt text-dark fs-4 fw-bold">ASOS</span>
+                        </span>
+                    </a>
+
+                    <a href="/" class="logo logo-light">
+                        <span class="logo-sm">
+                            <img src="/assets/images/logo-sm.png" alt="" height="22">
+                        </span>
+                        <span class="logo-lg">
+                            <span class="logo-txt text-white fs-4 fw-bold">ASOS</span>
+                        </span>
+                    </a>
+                </div>
+
+                <button type="button" class="btn btn-sm px-3 fs-16 header-item vertical-menu-btn topnav-hamburger" id="topnav-hamburger-icon">
+                    <span class="hamburger-icon">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </span>
+                </button>
+
+                <!-- App Search-->
+                <form class="app-search d-none d-md-block">
+                    <div class="position-relative">
+                        <input type="text" class="form-control" placeholder="Ara..." autocomplete="off" id="search-options" value="">
+                        <span class="mdi mdi-magnify search-widget-icon"></span>
+                        <span class="mdi mdi-close-circle search-widget-icon search-widget-icon-close d-none" id="search-close-options"></span>
+                    </div>
+                </form>
+            </div>
+
+            <div class="d-flex align-items-center">
+
+                <div class="dropdown d-md-none topbar-head-dropdown header-item">
+                    <button type="button" class="btn btn-icon btn-topbar btn-ghost-secondary rounded-circle" id="page-header-search-dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="bx bx-search fs-22"></i>
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-lg dropdown-menu-end p-0" aria-labelledby="page-header-search-dropdown">
+                        <form class="p-3">
+                            <div class="form-group m-0">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" placeholder="Ara..." aria-label="Search">
+                                    <button class="btn btn-primary" type="submit"><i class="mdi mdi-magnify"></i></button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Update Notification -->
+                <div class="dropdown topbar-head-dropdown ms-1 header-item" id="updateDropdown" style="display: none;">
+                    <button type="button" class="btn btn-icon btn-topbar btn-ghost-warning rounded-circle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="bx bx-cloud-download fs-22"></i>
+                        <span class="position-absolute topbar-badge fs-10 translate-middle badge rounded-pill bg-danger">
+                            <span class="visually-hidden">güncelleme mevcut</span>
+                        </span>
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-lg dropdown-menu-end p-0">
+                        <div class="dropdown-head bg-warning rounded-top">
+                            <div class="p-3">
+                                <div class="row align-items-center">
+                                    <div class="col">
+                                        <h6 class="m-0 fs-16 fw-semibold text-dark">Güncelleme Mevcut</h6>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-3">
+                            <p class="mb-2">Yeni sürüm: <span id="newVersion" class="fw-bold text-success"></span></p>
+                            <p class="mb-3 text-muted small">Mevcut sürüm: <span id="currentVersion"></span></p>
+                            <a href="/system/update" class="btn btn-warning btn-sm w-100">
+                                <i class="ri-download-line me-1"></i> Güncelle
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notifications -->
+                <div class="dropdown topbar-head-dropdown ms-1 header-item">
+                    <button type="button" class="btn btn-icon btn-topbar btn-ghost-secondary rounded-circle" id="page-header-notifications-dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="bx bx-bell fs-22"></i>
+                        <span class="position-absolute topbar-badge fs-10 translate-middle badge rounded-pill bg-danger" id="notificationCount" style="display: none;">0</span>
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-lg dropdown-menu-end p-0" aria-labelledby="page-header-notifications-dropdown">
+                        <div class="dropdown-head bg-primary rounded-top">
+                            <div class="p-3">
+                                <div class="row align-items-center">
+                                    <div class="col">
+                                        <h6 class="m-0 fs-16 fw-semibold text-white">Bildirimler</h6>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="py-2 px-3" id="notificationList">
+                            <div class="text-center py-4">
+                                <i class="ri-notification-off-line fs-24 text-muted"></i>
+                                <p class="text-muted mb-0 mt-2">Bildirim yok</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Status -->
+                <div class="dropdown ms-sm-3 header-item topbar-user">
+                    <button type="button" class="btn" id="page-header-user-dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <span class="d-flex align-items-center">
+                            <span class="rounded-circle header-profile-user bg-soft-primary text-primary d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                                <i class="ri-server-line fs-18"></i>
+                            </span>
+                            <span class="text-start ms-xl-2">
+                                <span class="d-none d-xl-inline-block ms-1 fw-medium user-name-text">Sunucu</span>
+                                <span class="d-none d-xl-block ms-1 fs-12 text-muted user-name-sub-text" id="serverStatus">Bağlanıyor...</span>
+                            </span>
+                        </span>
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-end">
+                        <!-- header -->
+                        <h6 class="dropdown-header">Sistem Durumu</h6>
+                        <div class="dropdown-item-text">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <span class="text-muted">CPU:</span>
+                                <span id="cpuUsage" class="fw-medium">-%</span>
+                            </div>
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <span class="text-muted">RAM:</span>
+                                <span id="ramUsage" class="fw-medium">-%</span>
+                            </div>
+                            <div class="d-flex align-items-center justify-content-between">
+                                <span class="text-muted">Disk:</span>
+                                <span id="diskUsage" class="fw-medium">-%</span>
+                            </div>
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="/system"><i class="ri-settings-4-line text-muted fs-16 align-middle me-1"></i> <span class="align-middle">Sistem Ayarları</span></a>
+                        <a class="dropdown-item" href="/auth/logout"><i class="ri-logout-box-line text-muted fs-16 align-middle me-1"></i> <span class="align-middle" data-key="t-logout">Çıkış Yap</span></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>

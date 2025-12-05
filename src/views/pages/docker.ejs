@@ -1,0 +1,731 @@
+<!-- Page Title -->
+<div class="row">
+    <div class="col-12">
+        <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+            <h4 class="mb-sm-0">Docker Yönetimi</h4>
+            <div class="page-title-right">
+                <ol class="breadcrumb m-0">
+                    <li class="breadcrumb-item"><a href="/">ASOS</a></li>
+                    <li class="breadcrumb-item active">Docker</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Docker Stats -->
+<div class="row">
+    <div class="col-xl-3 col-md-6">
+        <div class="card card-animate">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="avatar-sm flex-shrink-0">
+                        <span class="avatar-title bg-primary-subtle rounded-2">
+                            <i class="ri-ship-line text-primary fs-22"></i>
+                        </span>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <p class="text-uppercase fw-medium text-muted mb-1">Container</p>
+                        <h4 class="fs-18 mb-0" id="containerCount">0</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="card card-animate">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="avatar-sm flex-shrink-0">
+                        <span class="avatar-title bg-success-subtle rounded-2">
+                            <i class="ri-image-line text-success fs-22"></i>
+                        </span>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <p class="text-uppercase fw-medium text-muted mb-1">Image</p>
+                        <h4 class="fs-18 mb-0" id="imageCount">0</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="card card-animate">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="avatar-sm flex-shrink-0">
+                        <span class="avatar-title bg-info-subtle rounded-2">
+                            <i class="ri-hard-drive-2-line text-info fs-22"></i>
+                        </span>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <p class="text-uppercase fw-medium text-muted mb-1">Volume</p>
+                        <h4 class="fs-18 mb-0" id="volumeCount">0</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="card card-animate">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="avatar-sm flex-shrink-0">
+                        <span class="avatar-title bg-warning-subtle rounded-2">
+                            <i class="ri-share-line text-warning fs-22"></i>
+                        </span>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <p class="text-uppercase fw-medium text-muted mb-1">Network</p>
+                        <h4 class="fs-18 mb-0" id="networkCount">0</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tabs -->
+<ul class="nav nav-tabs nav-tabs-custom nav-primary mb-3" role="tablist">
+    <li class="nav-item">
+        <a class="nav-link active" data-bs-toggle="tab" href="#containersTab" role="tab">
+            <i class="ri-ship-line me-1"></i> Containerlar
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" data-bs-toggle="tab" href="#imagesTab" role="tab">
+            <i class="ri-image-line me-1"></i> Imageler
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" data-bs-toggle="tab" href="#volumesTab" role="tab">
+            <i class="ri-hard-drive-2-line me-1"></i> Volumeler
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" data-bs-toggle="tab" href="#networksTab" role="tab">
+            <i class="ri-share-line me-1"></i> Networkler
+        </a>
+    </li>
+</ul>
+
+<div class="tab-content">
+    <!-- Containers Tab -->
+    <div class="tab-pane active" id="containersTab" role="tabpanel">
+        <div class="card">
+            <div class="card-header d-flex align-items-center">
+                <h5 class="card-title mb-0 flex-grow-1">Docker Containerlar</h5>
+                <div class="flex-shrink-0">
+                    <button class="btn btn-primary" onclick="pullAndRunImage()">
+                        <i class="ri-add-line me-1"></i> Yeni Container
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-nowrap align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Container</th>
+                                <th>Image</th>
+                                <th>Durum</th>
+                                <th>Portlar</th>
+                                <th>Oluşturulma</th>
+                                <th>İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody id="containersList"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Images Tab -->
+    <div class="tab-pane" id="imagesTab" role="tabpanel">
+        <div class="card">
+            <div class="card-header d-flex align-items-center">
+                <h5 class="card-title mb-0 flex-grow-1">Docker Imageler</h5>
+                <div class="flex-shrink-0">
+                    <button class="btn btn-primary" onclick="pullImage()">
+                        <i class="ri-download-line me-1"></i> Image Çek
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-nowrap align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Repository</th>
+                                <th>Tag</th>
+                                <th>Boyut</th>
+                                <th>Oluşturulma</th>
+                                <th>İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody id="imagesList"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Volumes Tab -->
+    <div class="tab-pane" id="volumesTab" role="tabpanel">
+        <div class="card">
+            <div class="card-header d-flex align-items-center">
+                <h5 class="card-title mb-0 flex-grow-1">Docker Volumeler</h5>
+                <div class="flex-shrink-0">
+                    <button class="btn btn-primary" onclick="createVolume()">
+                        <i class="ri-add-line me-1"></i> Yeni Volume
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-nowrap align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Ad</th>
+                                <th>Driver</th>
+                                <th>Mountpoint</th>
+                                <th>İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody id="volumesList"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Networks Tab -->
+    <div class="tab-pane" id="networksTab" role="tabpanel">
+        <div class="card">
+            <div class="card-header d-flex align-items-center">
+                <h5 class="card-title mb-0 flex-grow-1">Docker Networkler</h5>
+                <div class="flex-shrink-0">
+                    <button class="btn btn-primary" onclick="createNetwork()">
+                        <i class="ri-add-line me-1"></i> Yeni Network
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-nowrap align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Ad</th>
+                                <th>Driver</th>
+                                <th>Scope</th>
+                                <th>İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody id="networksList"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Container Logs Modal -->
+<div class="modal fade" id="containerLogsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Container Logları - <span id="logsContainerName"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <pre id="containerLogsContent" class="bg-dark text-light p-3 rounded" style="max-height: 500px; overflow-y: auto; font-size: 12px;"></pre>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Kapat</button>
+                <button type="button" class="btn btn-primary" onclick="refreshContainerLogs()">
+                    <i class="ri-refresh-line me-1"></i> Yenile
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+var currentContainerId = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+    loadDockerStats();
+    loadContainers();
+    loadImages();
+    loadVolumes();
+    loadNetworks();
+});
+
+function loadDockerStats() {
+    fetch('/api/docker/stats')
+        .then(r => r.json())
+        .then(data => {
+            if (data.success && data.data) {
+                document.getElementById('containerCount').textContent = data.data.containers || 0;
+                document.getElementById('imageCount').textContent = data.data.images || 0;
+                document.getElementById('volumeCount').textContent = data.data.volumes || 0;
+                document.getElementById('networkCount').textContent = data.data.networks || 0;
+            }
+        });
+}
+
+function loadContainers() {
+    fetch('/api/docker/containers')
+        .then(r => r.json())
+        .then(data => {
+            var tbody = document.getElementById('containersList');
+            if (!data.success || !data.data || data.data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">Container bulunamadı</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = data.data.map(c => {
+                var name = c.Names ? c.Names[0].replace(/^\//, '') : c.Id.substring(0, 12);
+                var state = c.State || 'unknown';
+                var ports = c.Ports ? c.Ports.map(p => p.PublicPort ? `${p.PublicPort}:${p.PrivatePort}` : p.PrivatePort).join(', ') : '-';
+                
+                return `
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="avatar-xs me-2 flex-shrink-0">
+                                    <span class="avatar-title bg-primary-subtle text-primary rounded">
+                                        <i class="ri-ship-line"></i>
+                                    </span>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">${name}</h6>
+                                    <small class="text-muted">${c.Id.substring(0, 12)}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td><code>${c.Image}</code></td>
+                        <td>
+                            ${state === 'running' ? 
+                                '<span class="badge bg-success">Çalışıyor</span>' : 
+                                '<span class="badge bg-secondary">Durdu</span>'}
+                        </td>
+                        <td>${ports}</td>
+                        <td>${formatDate(c.Created)}</td>
+                        <td>
+                            <div class="dropdown">
+                                <button class="btn btn-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                    İşlemler
+                                </button>
+                                <ul class="dropdown-menu">
+                                    ${state === 'running' ? `
+                                        <li><a class="dropdown-item" href="#" onclick="stopContainer('${c.Id}')">
+                                            <i class="ri-stop-circle-line me-2 text-warning"></i>Durdur
+                                        </a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="restartContainer('${c.Id}')">
+                                            <i class="ri-restart-line me-2 text-info"></i>Yeniden Başlat
+                                        </a></li>
+                                    ` : `
+                                        <li><a class="dropdown-item" href="#" onclick="startContainer('${c.Id}')">
+                                            <i class="ri-play-circle-line me-2 text-success"></i>Başlat
+                                        </a></li>
+                                    `}
+                                    <li><a class="dropdown-item" href="#" onclick="showContainerLogs('${c.Id}', '${name}')">
+                                        <i class="ri-file-list-line me-2"></i>Loglar
+                                    </a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item text-danger" href="#" onclick="removeContainer('${c.Id}')">
+                                        <i class="ri-delete-bin-line me-2"></i>Sil
+                                    </a></li>
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        });
+}
+
+function loadImages() {
+    fetch('/api/docker/images')
+        .then(r => r.json())
+        .then(data => {
+            var tbody = document.getElementById('imagesList');
+            if (!data.success || !data.data || data.data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">Image bulunamadı</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = data.data.map(img => {
+                var tags = img.RepoTags || ['<none>'];
+                var size = formatBytes(img.Size);
+                
+                return tags.map(tag => {
+                    var [repo, tagName] = tag.split(':');
+                    return `
+                        <tr>
+                            <td><code>${repo}</code></td>
+                            <td><span class="badge bg-info-subtle text-info">${tagName || 'latest'}</span></td>
+                            <td>${size}</td>
+                            <td>${formatDate(img.Created)}</td>
+                            <td>
+                                <button class="btn btn-soft-danger btn-sm" onclick="removeImage('${img.Id}')">
+                                    <i class="ri-delete-bin-line"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            }).join('');
+        });
+}
+
+function loadVolumes() {
+    fetch('/api/docker/volumes')
+        .then(r => r.json())
+        .then(data => {
+            var tbody = document.getElementById('volumesList');
+            var volumes = data.data?.Volumes || [];
+            if (volumes.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-4">Volume bulunamadı</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = volumes.map(v => `
+                <tr>
+                    <td><code>${v.Name}</code></td>
+                    <td>${v.Driver}</td>
+                    <td><small>${v.Mountpoint}</small></td>
+                    <td>
+                        <button class="btn btn-soft-danger btn-sm" onclick="removeVolume('${v.Name}')">
+                            <i class="ri-delete-bin-line"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        });
+}
+
+function loadNetworks() {
+    fetch('/api/docker/networks')
+        .then(r => r.json())
+        .then(data => {
+            var tbody = document.getElementById('networksList');
+            if (!data.success || !data.data || data.data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-4">Network bulunamadı</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = data.data.map(n => `
+                <tr>
+                    <td><code>${n.Name}</code></td>
+                    <td>${n.Driver}</td>
+                    <td><span class="badge bg-secondary">${n.Scope}</span></td>
+                    <td>
+                        ${!['bridge', 'host', 'none'].includes(n.Name) ? `
+                            <button class="btn btn-soft-danger btn-sm" onclick="removeNetwork('${n.Id}')">
+                                <i class="ri-delete-bin-line"></i>
+                            </button>
+                        ` : ''}
+                    </td>
+                </tr>
+            `).join('');
+        });
+}
+
+function startContainer(id) {
+    fetch(`/api/docker/containers/${id}/start`, { method: 'POST' })
+        .then(r => r.json())
+        .then(res => {
+            if (res.success) {
+                loadContainers();
+                Swal.fire('Başarılı!', 'Container başlatıldı.', 'success');
+            } else {
+                Swal.fire('Hata!', res.error, 'error');
+            }
+        });
+}
+
+function stopContainer(id) {
+    fetch(`/api/docker/containers/${id}/stop`, { method: 'POST' })
+        .then(r => r.json())
+        .then(res => {
+            if (res.success) {
+                loadContainers();
+                Swal.fire('Başarılı!', 'Container durduruldu.', 'success');
+            } else {
+                Swal.fire('Hata!', res.error, 'error');
+            }
+        });
+}
+
+function restartContainer(id) {
+    fetch(`/api/docker/containers/${id}/restart`, { method: 'POST' })
+        .then(r => r.json())
+        .then(res => {
+            if (res.success) {
+                loadContainers();
+                Swal.fire('Başarılı!', 'Container yeniden başlatıldı.', 'success');
+            } else {
+                Swal.fire('Hata!', res.error, 'error');
+            }
+        });
+}
+
+function removeContainer(id) {
+    Swal.fire({
+        title: 'Emin misiniz?',
+        text: 'Bu container silinecek!',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#f06548',
+        confirmButtonText: 'Evet, Sil',
+        cancelButtonText: 'İptal'
+    }).then(result => {
+        if (result.isConfirmed) {
+            fetch(`/api/docker/containers/${id}`, { method: 'DELETE' })
+                .then(r => r.json())
+                .then(res => {
+                    if (res.success) {
+                        loadContainers();
+                        loadDockerStats();
+                        Swal.fire('Silindi!', 'Container silindi.', 'success');
+                    } else {
+                        Swal.fire('Hata!', res.error, 'error');
+                    }
+                });
+        }
+    });
+}
+
+function showContainerLogs(id, name) {
+    currentContainerId = id;
+    document.getElementById('logsContainerName').textContent = name;
+    document.getElementById('containerLogsContent').textContent = 'Loglar yükleniyor...';
+    new bootstrap.Modal(document.getElementById('containerLogsModal')).show();
+    refreshContainerLogs();
+}
+
+function refreshContainerLogs() {
+    fetch(`/api/docker/containers/${currentContainerId}/logs`)
+        .then(r => r.json())
+        .then(res => {
+            document.getElementById('containerLogsContent').textContent = res.data || 'Log bulunamadı.';
+        });
+}
+
+function pullImage() {
+    Swal.fire({
+        title: 'Image Çek',
+        input: 'text',
+        inputPlaceholder: 'nginx:latest',
+        showCancelButton: true,
+        confirmButtonText: 'Çek',
+        cancelButtonText: 'İptal'
+    }).then(result => {
+        if (result.isConfirmed && result.value) {
+            Swal.fire({ title: 'Image çekiliyor...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            fetch('/api/docker/images/pull', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ image: result.value })
+            })
+            .then(r => r.json())
+            .then(res => {
+                if (res.success) {
+                    loadImages();
+                    loadDockerStats();
+                    Swal.fire('Başarılı!', 'Image çekildi.', 'success');
+                } else {
+                    Swal.fire('Hata!', res.error, 'error');
+                }
+            });
+        }
+    });
+}
+
+function removeImage(id) {
+    Swal.fire({
+        title: 'Emin misiniz?',
+        text: 'Bu image silinecek!',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#f06548',
+        confirmButtonText: 'Sil',
+        cancelButtonText: 'İptal'
+    }).then(result => {
+        if (result.isConfirmed) {
+            fetch(`/api/docker/images/${encodeURIComponent(id)}`, { method: 'DELETE' })
+                .then(r => r.json())
+                .then(res => {
+                    if (res.success) {
+                        loadImages();
+                        loadDockerStats();
+                        Swal.fire('Silindi!', 'Image silindi.', 'success');
+                    } else {
+                        Swal.fire('Hata!', res.error, 'error');
+                    }
+                });
+        }
+    });
+}
+
+function createVolume() {
+    Swal.fire({
+        title: 'Yeni Volume',
+        input: 'text',
+        inputPlaceholder: 'volume-name',
+        showCancelButton: true,
+        confirmButtonText: 'Oluştur',
+        cancelButtonText: 'İptal'
+    }).then(result => {
+        if (result.isConfirmed && result.value) {
+            fetch('/api/docker/volumes', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: result.value })
+            })
+            .then(r => r.json())
+            .then(res => {
+                if (res.success) {
+                    loadVolumes();
+                    loadDockerStats();
+                    Swal.fire('Başarılı!', 'Volume oluşturuldu.', 'success');
+                } else {
+                    Swal.fire('Hata!', res.error, 'error');
+                }
+            });
+        }
+    });
+}
+
+function removeVolume(name) {
+    Swal.fire({
+        title: 'Emin misiniz?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#f06548',
+        confirmButtonText: 'Sil',
+        cancelButtonText: 'İptal'
+    }).then(result => {
+        if (result.isConfirmed) {
+            fetch(`/api/docker/volumes/${name}`, { method: 'DELETE' })
+                .then(r => r.json())
+                .then(res => {
+                    if (res.success) {
+                        loadVolumes();
+                        loadDockerStats();
+                        Swal.fire('Silindi!', 'Volume silindi.', 'success');
+                    } else {
+                        Swal.fire('Hata!', res.error, 'error');
+                    }
+                });
+        }
+    });
+}
+
+function createNetwork() {
+    Swal.fire({
+        title: 'Yeni Network',
+        input: 'text',
+        inputPlaceholder: 'network-name',
+        showCancelButton: true,
+        confirmButtonText: 'Oluştur',
+        cancelButtonText: 'İptal'
+    }).then(result => {
+        if (result.isConfirmed && result.value) {
+            fetch('/api/docker/networks', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: result.value })
+            })
+            .then(r => r.json())
+            .then(res => {
+                if (res.success) {
+                    loadNetworks();
+                    loadDockerStats();
+                    Swal.fire('Başarılı!', 'Network oluşturuldu.', 'success');
+                } else {
+                    Swal.fire('Hata!', res.error, 'error');
+                }
+            });
+        }
+    });
+}
+
+function removeNetwork(id) {
+    Swal.fire({
+        title: 'Emin misiniz?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#f06548',
+        confirmButtonText: 'Sil',
+        cancelButtonText: 'İptal'
+    }).then(result => {
+        if (result.isConfirmed) {
+            fetch(`/api/docker/networks/${id}`, { method: 'DELETE' })
+                .then(r => r.json())
+                .then(res => {
+                    if (res.success) {
+                        loadNetworks();
+                        loadDockerStats();
+                        Swal.fire('Silindi!', 'Network silindi.', 'success');
+                    } else {
+                        Swal.fire('Hata!', res.error, 'error');
+                    }
+                });
+        }
+    });
+}
+
+function pullAndRunImage() {
+    Swal.fire({
+        title: 'Yeni Container',
+        html: `
+            <input id="swalImage" class="swal2-input" placeholder="Image (nginx:latest)">
+            <input id="swalName" class="swal2-input" placeholder="Container adı (opsiyonel)">
+            <input id="swalPorts" class="swal2-input" placeholder="Port mapping (8080:80)">
+        `,
+        showCancelButton: true,
+        confirmButtonText: 'Oluştur',
+        cancelButtonText: 'İptal',
+        preConfirm: () => ({
+            image: document.getElementById('swalImage').value,
+            name: document.getElementById('swalName').value,
+            ports: document.getElementById('swalPorts').value
+        })
+    }).then(result => {
+        if (result.isConfirmed && result.value.image) {
+            Swal.fire({ title: 'Container oluşturuluyor...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            fetch('/api/docker/containers/run', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(result.value)
+            })
+            .then(r => r.json())
+            .then(res => {
+                if (res.success) {
+                    loadContainers();
+                    loadDockerStats();
+                    Swal.fire('Başarılı!', 'Container oluşturuldu.', 'success');
+                } else {
+                    Swal.fire('Hata!', res.error, 'error');
+                }
+            });
+        }
+    });
+}
+
+function formatBytes(bytes) {
+    if (bytes === 0) return '0 B';
+    var k = 1024;
+    var sizes = ['B', 'KB', 'MB', 'GB'];
+    var i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+function formatDate(timestamp) {
+    return new Date(timestamp * 1000).toLocaleDateString('tr-TR');
+}
+</script>

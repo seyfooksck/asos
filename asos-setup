@@ -1,0 +1,844 @@
+﻿#!/bin/bash
+
+# ASOS - Server Management Panel Setup Script
+# Kullanım: wget -qO- https://raw.githubusercontent.com/seyfooksck/asos/main/asos-setup | bash
+# veya: curl -sL https://raw.githubusercontent.com/seyfooksck/asos/main/asos-setup | bash
+
+set -e
+
+# Renkler
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+CYAN='\033[0;36m'
+BOLD='\033[1m'
+NC='\033[0m'
+
+# Versiyon
+VERSION="1.0.0"
+REPO_URL="https://github.com/seyfooksck/asos"
+BRANCH="main"
+
+# Banner
+show_banner() {
+    clear
+    echo -e "${CYAN}"
+    echo "  ╔═══════════════════════════════════════════════════════════╗"
+    echo "  ║                                                           ║"
+    echo "  ║   █████╗ ███████╗ ██████╗ ███████╗                       ║"
+    echo "  ║  ██╔══██╗██╔════╝██╔═══██╗██╔════╝                       ║"
+    echo "  ║  ███████║███████╗██║   ██║███████╗                       ║"
+    echo "  ║  ██╔══██║╚════██║██║   ██║╚════██║                       ║"
+    echo "  ║  ██║  ██║███████║╚██████╔╝███████║                       ║"
+    echo "  ║  ╚═╝  ╚═╝╚══════╝ ╚═════╝ ╚══════╝                       ║"
+    echo "  ║                                                           ║"
+    echo "  ║        Self-Hosted Server Management Panel                ║"
+    echo "  ║                    v${VERSION}                                 ║"
+    echo "  ║                                                           ║"
+    echo "  ╚═══════════════════════════════════════════════════════════╝"
+    echo -e "${NC}"
+    echo ""
+}
+
+# Log fonksiyonları
+log_info() {
+    echo -e "${BLUE}[INFO]${NC} $1"
+}
+
+log_success() {
+    echo -e "${GREEN}[✓]${NC} $1"
+}
+
+log_warning() {
+    echo -e "${YELLOW}[!]${NC} $1"
+}
+
+log_error() {
+    echo -e "${RED}[✗]${NC} $1"
+}
+
+log_step() {
+    echo -e "\n${BOLD}${CYAN}▶ $1${NC}"
+}
+
+# Spinner
+spinner() {
+    local pid=$1
+    local delay=0.1
+    local spinstr='|/-\'
+    while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
+        local temp=${spinstr#?}
+        printf " [%c]  " "$spinstr"
+        local spinstr=$temp${spinstr%"$temp"}
+        sleep $delay
+        printf "\b\b\b\b\b\b"
+    done
+    printf "    \b\b\b\b"
+}
+
+# Root kontrolü
+check_root() {
+    if [ "$EUID" -ne 0 ]; then
+        log_error "Bu script root yetkisi gerektirir!"
+        echo ""
+        echo -e "Kullanım: ${YELLOW}sudo bash asos-setup${NC}"
+        echo -e "  veya:  ${YELLOW}wget -qO- URL | sudo bash${NC}"
+        exit 1
+    fi
+}
+
+# Sistem kontrolü
+check_system() {
+    log_step "Sistem Gereksinimleri Kontrol Ediliyor"
+    
+    # OS kontrolü
+    if [ ! -f /etc/os-release ]; then
+        log_error "Desteklenmeyen işletim sistemi!"
+        exit 1
+    fi
+    
+    source /etc/os-release
+    
+    if [[ "$ID" != "ubuntu" && "$ID" != "debian" ]]; then
+        log_error "Bu script sadece Ubuntu/Debian sistemlerde çalışır!"
+        log_info "Tespit edilen: $PRETTY_NAME"
+        exit 1
+    fi
+    
+    log_success "İşletim Sistemi: $PRETTY_NAME"
+    
+    # RAM kontrolü
+    TOTAL_RAM=$(free -m | awk '/^Mem:/{print $2}')
+    if [ "$TOTAL_RAM" -lt 1024 ]; then
+        log_warning "Minimum 1GB RAM önerilir (Mevcut: ${TOTAL_RAM}MB)"
+    else
+        log_success "RAM: ${TOTAL_RAM}MB"
+    fi
+    
+    # Disk kontrolü
+    DISK_FREE=$(df -BG / | awk 'NR==2 {print $4}' | tr -d 'G')
+    if [ "$DISK_FREE" -lt 10 ]; then
+        log_warning "Minimum 10GB boş disk alanı önerilir (Mevcut: ${DISK_FREE}GB)"
+    else
+        log_success "Boş Disk: ${DISK_FREE}GB"
+    fi
+    
+    # Port kontrolü
+    for port in 80 443 3000 25 587 993; do
+        if netstat -tuln 2>/dev/null | grep -q ":$port " || ss -tuln 2>/dev/null | grep -q ":$port "; then
+            log_warning "Port $port zaten kullanımda"
+        fi
+    done
+}
+
+# Interaktif kurulum
+interactive_setup() {
+    log_step "Kurulum Yapılandırması"
+    echo ""
+    
+    # Domain
+    while true; do
+        read -p "$(echo -e ${CYAN})?${NC} Ana domain (örn: panel.example.com): " PRIMARY_DOMAIN
+        if [[ "$PRIMARY_DOMAIN" =~ ^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?)*$ ]]; then
+            break
+        fi
+        log_error "Geçersiz domain formatı!"
+    done
+    
+    # Admin email
+    while true; do
+        read -p "$(echo -e ${CYAN})?${NC} Admin e-posta adresi: " ADMIN_EMAIL
+        if [[ "$ADMIN_EMAIL" =~ ^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$ ]]; then
+            break
+        fi
+        log_error "Geçersiz e-posta formatı!"
+    done
+    
+    # Admin password
+    while true; do
+        read -s -p "$(echo -e ${CYAN})?${NC} Admin şifresi (min 8 karakter): " ADMIN_PASSWORD
+        echo ""
+        if [ ${#ADMIN_PASSWORD} -ge 8 ]; then
+            read -s -p "$(echo -e ${CYAN})?${NC} Şifreyi tekrar girin: " ADMIN_PASSWORD_CONFIRM
+            echo ""
+            if [ "$ADMIN_PASSWORD" = "$ADMIN_PASSWORD_CONFIRM" ]; then
+                break
+            fi
+            log_error "Şifreler eşleşmiyor!"
+        else
+            log_error "Şifre en az 8 karakter olmalı!"
+        fi
+    done
+    
+    # MongoDB
+    echo ""
+    read -p "$(echo -e ${CYAN})?${NC} MongoDB URI (lokal için boş bırakın): " MONGO_URI
+    if [ -z "$MONGO_URI" ]; then
+        MONGO_URI="mongodb://localhost:27017/asos"
+        INSTALL_MONGO=true
+        log_info "Lokal MongoDB kurulacak"
+    else
+        INSTALL_MONGO=false
+    fi
+    
+    # SSL
+    echo ""
+    read -p "$(echo -e ${CYAN})?${NC} SSL sertifikası kurulsun mu? (e/h) [h]: " INSTALL_SSL
+    INSTALL_SSL=${INSTALL_SSL:-h}
+    
+    # Özet
+    echo ""
+    echo -e "${BOLD}Kurulum Özeti:${NC}"
+    echo -e "  Domain:     ${GREEN}$PRIMARY_DOMAIN${NC}"
+    echo -e "  Admin:      ${GREEN}$ADMIN_EMAIL${NC}"
+    echo -e "  MongoDB:    ${GREEN}$([ "$INSTALL_MONGO" = true ] && echo "Lokal" || echo "Harici")${NC}"
+    echo -e "  SSL:        ${GREEN}$([ "$INSTALL_SSL" = "e" ] && echo "Evet" || echo "Hayır")${NC}"
+    echo ""
+    
+    read -p "$(echo -e ${CYAN})?${NC} Kuruluma devam edilsin mi? (e/h) [e]: " CONFIRM
+    CONFIRM=${CONFIRM:-e}
+    
+    if [[ "$CONFIRM" != "e" && "$CONFIRM" != "E" ]]; then
+        log_warning "Kurulum iptal edildi"
+        exit 0
+    fi
+}
+
+# Bağımlılıkları yükle
+install_dependencies() {
+    log_step "Sistem Paketleri Yükleniyor"
+    
+    log_info "Paket listesi güncelleniyor..."
+    apt update -qq > /dev/null 2>&1
+    
+    log_info "Temel paketler yükleniyor..."
+    apt install -y -qq curl wget git build-essential software-properties-common \
+        gnupg2 ca-certificates lsb-release apt-transport-https net-tools > /dev/null 2>&1
+    log_success "Temel paketler yüklendi"
+}
+
+# Node.js kurulumu
+install_nodejs() {
+    log_step "Node.js Kurulumu"
+    
+    if command -v node &> /dev/null; then
+        NODE_VER=$(node -v)
+        log_success "Node.js zaten yüklü: $NODE_VER"
+    else
+        log_info "Node.js v20 yükleniyor..."
+        curl -fsSL https://deb.nodesource.com/setup_20.x | bash - > /dev/null 2>&1
+        apt install -y -qq nodejs > /dev/null 2>&1
+        log_success "Node.js $(node -v) yüklendi"
+    fi
+}
+
+# MongoDB kurulumu
+install_mongodb() {
+    if [ "$INSTALL_MONGO" != true ]; then
+        return
+    fi
+    
+    log_step "MongoDB Kurulumu"
+    
+    if command -v mongod &> /dev/null; then
+        log_success "MongoDB zaten yüklü"
+    else
+        log_info "MongoDB 7.0 yükleniyor..."
+        curl -fsSL https://pgp.mongodb.com/server-7.0.asc | gpg -o /usr/share/keyrings/mongodb-server-7.0.gpg --dearmor 2>/dev/null
+        echo "deb [ signed-by=/usr/share/keyrings/mongodb-server-7.0.gpg ] https://repo.mongodb.org/apt/ubuntu $(lsb_release -cs)/mongodb-org/7.0 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-7.0.list > /dev/null
+        apt update -qq > /dev/null 2>&1
+        apt install -y -qq mongodb-org > /dev/null 2>&1
+        systemctl start mongod
+        systemctl enable mongod > /dev/null 2>&1
+        log_success "MongoDB yüklendi ve başlatıldı"
+    fi
+}
+
+# Docker kurulumu
+install_docker() {
+    log_step "Docker Kurulumu"
+    
+    if command -v docker &> /dev/null; then
+        DOCKER_VER=$(docker -v | cut -d ' ' -f3 | cut -d ',' -f1)
+        log_success "Docker zaten yüklü: v$DOCKER_VER"
+    else
+        log_info "Docker yükleniyor..."
+        curl -fsSL https://get.docker.com | bash > /dev/null 2>&1
+        systemctl start docker
+        systemctl enable docker > /dev/null 2>&1
+        log_success "Docker yüklendi ve başlatıldı"
+    fi
+}
+
+# Nginx kurulumu
+install_nginx() {
+    log_step "Nginx Kurulumu"
+    
+    if command -v nginx &> /dev/null; then
+        log_success "Nginx zaten yüklü"
+    else
+        log_info "Nginx yükleniyor..."
+        apt install -y -qq nginx > /dev/null 2>&1
+        systemctl start nginx
+        systemctl enable nginx > /dev/null 2>&1
+        log_success "Nginx yüklendi"
+    fi
+}
+
+# Mail sunucusu kurulumu
+install_mail_server() {
+    log_step "Mail Sunucusu Kurulumu"
+    
+    log_info "Postfix ve Dovecot yükleniyor..."
+    
+    debconf-set-selections <<< "postfix postfix/mailname string $PRIMARY_DOMAIN"
+    debconf-set-selections <<< "postfix postfix/main_mailer_type string 'Internet Site'"
+    
+    apt install -y -qq postfix dovecot-core dovecot-imapd dovecot-pop3d dovecot-lmtpd > /dev/null 2>&1
+    
+    # Virtual mail kullanıcısı
+    groupadd -g 5000 vmail 2>/dev/null || true
+    useradd -g vmail -u 5000 vmail -d /var/mail/vhosts -m 2>/dev/null || true
+    mkdir -p /var/mail/vhosts
+    chown -R vmail:vmail /var/mail/vhosts
+    
+    # Postfix config
+    cat > /etc/postfix/main.cf << POSTFIX_EOF
+smtpd_banner = \$myhostname ESMTP
+biff = no
+append_dot_mydomain = no
+readme_directory = no
+smtpd_tls_cert_file=/etc/ssl/certs/ssl-cert-snakeoil.pem
+smtpd_tls_key_file=/etc/ssl/private/ssl-cert-snakeoil.key
+smtpd_use_tls=yes
+smtpd_tls_session_cache_database = btree:\${data_directory}/smtpd_scache
+smtp_tls_session_cache_database = btree:\${data_directory}/smtp_scache
+myhostname = $PRIMARY_DOMAIN
+mydomain = $PRIMARY_DOMAIN
+myorigin = \$mydomain
+mydestination = localhost
+mynetworks = 127.0.0.0/8 [::ffff:127.0.0.0]/104 [::1]/128
+mailbox_size_limit = 0
+recipient_delimiter = +
+inet_interfaces = all
+inet_protocols = all
+virtual_mailbox_domains = /etc/postfix/vhosts
+virtual_mailbox_base = /var/mail/vhosts
+virtual_mailbox_maps = hash:/etc/postfix/vmailbox
+virtual_alias_maps = hash:/etc/postfix/virtual
+virtual_minimum_uid = 100
+virtual_uid_maps = static:5000
+virtual_gid_maps = static:5000
+virtual_transport = lmtp:unix:private/dovecot-lmtp
+POSTFIX_EOF
+
+    touch /etc/postfix/vhosts /etc/postfix/vmailbox /etc/postfix/virtual
+    postmap /etc/postfix/vmailbox 2>/dev/null
+    postmap /etc/postfix/virtual 2>/dev/null
+    
+    # Dovecot config
+    cat > /etc/dovecot/dovecot.conf << DOVECOT_EOF
+protocols = imap pop3 lmtp
+listen = *, ::
+mail_location = maildir:/var/mail/vhosts/%d/%n
+mail_privileged_group = vmail
+passdb {
+  driver = passwd-file
+  args = /etc/dovecot/passwd
+}
+userdb {
+  driver = static
+  args = uid=vmail gid=vmail home=/var/mail/vhosts/%d/%n
+}
+service lmtp {
+  unix_listener /var/spool/postfix/private/dovecot-lmtp {
+    mode = 0600
+    user = postfix
+    group = postfix
+  }
+}
+service auth {
+  unix_listener /var/spool/postfix/private/auth {
+    mode = 0660
+    user = postfix
+    group = postfix
+  }
+}
+DOVECOT_EOF
+
+    touch /etc/dovecot/passwd
+    
+    systemctl restart postfix > /dev/null 2>&1
+    systemctl restart dovecot > /dev/null 2>&1
+    systemctl enable postfix dovecot > /dev/null 2>&1
+    
+    log_success "Mail sunucusu yapılandırıldı"
+}
+
+# Firewall yapılandırması
+configure_firewall() {
+    log_step "Firewall Yapılandırması"
+    
+    log_info "UFW kuralları ekleniyor..."
+    
+    apt install -y -qq ufw > /dev/null 2>&1
+    
+    ufw --force enable > /dev/null 2>&1
+    ufw allow ssh > /dev/null 2>&1
+    ufw allow http > /dev/null 2>&1
+    ufw allow https > /dev/null 2>&1
+    ufw allow 25/tcp > /dev/null 2>&1
+    ufw allow 587/tcp > /dev/null 2>&1
+    ufw allow 993/tcp > /dev/null 2>&1
+    ufw allow 995/tcp > /dev/null 2>&1
+    ufw allow 3000/tcp > /dev/null 2>&1
+    
+    log_success "Firewall yapılandırıldı"
+}
+
+# ASOS kurulumu
+install_asos() {
+    log_step "ASOS Panel Kurulumu"
+    
+    ASOS_DIR="/opt/asos"
+    ASOS_USER="asos"
+    JWT_SECRET=$(openssl rand -hex 32)
+    
+    # Kullanıcı oluştur
+    useradd -r -s /bin/false $ASOS_USER 2>/dev/null || true
+    
+    # Dizin oluştur
+    mkdir -p $ASOS_DIR
+    cd $ASOS_DIR
+    
+    log_info "ASOS dosyaları indiriliyor..."
+    
+    # Git ile indir veya dosyaları oluştur
+    if git clone --depth 1 -b $BRANCH $REPO_URL.git . 2>/dev/null; then
+        log_success "ASOS reposu klonlandı"
+    else
+        log_info "Repo bulunamadı, dosyalar oluşturuluyor..."
+        create_asos_files
+    fi
+    
+    # .env dosyası
+    cat > .env << ENV_EOF
+NODE_ENV=production
+PORT=3000
+MONGODB_URI=$MONGO_URI
+JWT_SECRET=$JWT_SECRET
+ADMIN_EMAIL=$ADMIN_EMAIL
+ADMIN_PASSWORD=$ADMIN_PASSWORD
+PRIMARY_DOMAIN=$PRIMARY_DOMAIN
+SESSION_SECRET=$(openssl rand -hex 32)
+ENV_EOF
+    
+    # NPM paketlerini yükle
+    log_info "NPM paketleri yükleniyor..."
+    npm install --production > /dev/null 2>&1
+    
+    # Log dizini
+    mkdir -p /var/log/asos
+    chown $ASOS_USER:$ASOS_USER /var/log/asos
+    
+    # İzinler
+    chown -R $ASOS_USER:$ASOS_USER $ASOS_DIR
+    
+    # Docker grubuna ekle
+    usermod -aG docker $ASOS_USER 2>/dev/null || true
+    
+    log_success "ASOS dosyaları hazırlandı"
+}
+
+# ASOS dosyalarını oluştur (repo yoksa)
+create_asos_files() {
+    # package.json
+    cat > package.json << 'PKG_EOF'
+{
+  "name": "asos",
+  "version": "1.0.0",
+  "description": "ASOS - Self-Hosted Server Management Panel",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "connect-flash": "^0.1.1",
+    "cors": "^2.8.5",
+    "dockerode": "^4.0.0",
+    "dotenv": "^16.3.1",
+    "ejs": "^3.1.9",
+    "express": "^4.18.2",
+    "express-ejs-layouts": "^2.5.1",
+    "express-session": "^1.17.3",
+    "express-validator": "^7.0.1",
+    "helmet": "^7.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.0.0",
+    "socket.io": "^4.7.2",
+    "winston": "^3.11.0"
+  }
+}
+PKG_EOF
+
+    # Dizin yapısı
+    mkdir -p src/{controllers,middleware,models,routes,utils,views/{layouts,partials,pages,auth,errors}}
+    mkdir -p public/{css,js}
+    
+    # Temel server.js (kısaltılmış)
+    cat > src/server.js << 'SERVER_EOF'
+require('dotenv').config();
+const express = require('express');
+const mongoose = require('mongoose');
+const expressLayouts = require('express-ejs-layouts');
+const session = require('express-session');
+const flash = require('connect-flash');
+const http = require('http');
+const { Server } = require('socket.io');
+const path = require('path');
+
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server);
+
+// View Engine
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+app.use(expressLayouts);
+app.set('layout', 'layouts/main');
+
+// Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, '../public')));
+
+app.use(session({
+    secret: process.env.SESSION_SECRET || 'asos-secret-key',
+    resave: false,
+    saveUninitialized: false,
+    cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 }
+}));
+
+app.use(flash());
+
+app.use((req, res, next) => {
+    res.locals.success = req.flash('success');
+    res.locals.error = req.flash('error');
+    res.locals.user = req.session.user || null;
+    next();
+});
+
+// MongoDB
+mongoose.connect(process.env.MONGODB_URI)
+    .then(() => console.log('MongoDB bağlantısı başarılı'))
+    .catch(err => console.error('MongoDB hatası:', err));
+
+// Ana sayfa
+app.get('/', (req, res) => {
+    if (req.session.user) {
+        res.redirect('/dashboard');
+    } else {
+        res.redirect('/login');
+    }
+});
+
+app.get('/login', (req, res) => {
+    res.render('auth/login', { layout: 'layouts/auth', title: 'Giriş' });
+});
+
+app.get('/dashboard', (req, res) => {
+    if (!req.session.user) return res.redirect('/login');
+    res.render('pages/dashboard', { title: 'Dashboard', page: 'dashboard' });
+});
+
+// Socket.io
+io.on('connection', (socket) => {
+    console.log('Client bağlandı');
+});
+
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+    console.log(`ASOS Panel http://localhost:${PORT} adresinde çalışıyor`);
+});
+SERVER_EOF
+
+    # Layout - main.ejs
+    cat > src/views/layouts/main.ejs << 'LAYOUT_EOF'
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> - ASOS Panel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+</head>
+<body>
+    <div class="d-flex">
+        <%- include('../partials/sidebar') %>
+        <main class="flex-grow-1 p-4">
+            <%- include('../partials/alerts') %>
+            <%- body %>
+        </main>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/app.js"></script>
+</body>
+</html>
+LAYOUT_EOF
+
+    # Layout - auth.ejs
+    cat > src/views/layouts/auth.ejs << 'AUTH_LAYOUT_EOF'
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> - ASOS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+</head>
+<body class="bg-dark">
+    <div class="min-vh-100 d-flex align-items-center justify-content-center">
+        <%- body %>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+AUTH_LAYOUT_EOF
+
+    # Sidebar
+    cat > src/views/partials/sidebar.ejs << 'SIDEBAR_EOF'
+<nav class="sidebar bg-dark text-white p-3" style="width: 250px; min-height: 100vh;">
+    <div class="mb-4">
+        <h4><i class="bi bi-server"></i> ASOS</h4>
+    </div>
+    <ul class="nav flex-column">
+        <li class="nav-item"><a href="/dashboard" class="nav-link text-white"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+        <li class="nav-item"><a href="/domains" class="nav-link text-white"><i class="bi bi-globe"></i> Domainler</a></li>
+        <li class="nav-item"><a href="/mail" class="nav-link text-white"><i class="bi bi-envelope"></i> Mail</a></li>
+        <li class="nav-item"><a href="/apps" class="nav-link text-white"><i class="bi bi-grid"></i> Uygulamalar</a></li>
+        <li class="nav-item"><a href="/docker" class="nav-link text-white"><i class="bi bi-box"></i> Docker</a></li>
+        <li class="nav-item"><a href="/system" class="nav-link text-white"><i class="bi bi-gear"></i> Sistem</a></li>
+    </ul>
+</nav>
+SIDEBAR_EOF
+
+    # Alerts
+    cat > src/views/partials/alerts.ejs << 'ALERTS_EOF'
+<% if (success && success.length > 0) { %>
+<div class="alert alert-success alert-dismissible fade show"><%= success %><button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+<% } %>
+<% if (error && error.length > 0) { %>
+<div class="alert alert-danger alert-dismissible fade show"><%= error %><button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+<% } %>
+ALERTS_EOF
+
+    # Dashboard
+    cat > src/views/pages/dashboard.ejs << 'DASH_EOF'
+<h2>Dashboard</h2>
+<div class="row g-4 mt-3">
+    <div class="col-md-3"><div class="card bg-primary text-white p-3"><h5>Domainler</h5><h2>0</h2></div></div>
+    <div class="col-md-3"><div class="card bg-success text-white p-3"><h5>Mail Hesapları</h5><h2>0</h2></div></div>
+    <div class="col-md-3"><div class="card bg-info text-white p-3"><h5>Uygulamalar</h5><h2>0</h2></div></div>
+    <div class="col-md-3"><div class="card bg-warning text-white p-3"><h5>Containerlar</h5><h2>0</h2></div></div>
+</div>
+DASH_EOF
+
+    # Login
+    cat > src/views/auth/login.ejs << 'LOGIN_EOF'
+<div class="card" style="width: 400px;">
+    <div class="card-body p-4">
+        <h3 class="text-center mb-4"><i class="bi bi-server"></i> ASOS</h3>
+        <form action="/login" method="POST">
+            <div class="mb-3">
+                <label class="form-label">E-posta</label>
+                <input type="email" name="email" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Şifre</label>
+                <input type="password" name="password" class="form-control" required>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Giriş Yap</button>
+        </form>
+    </div>
+</div>
+LOGIN_EOF
+
+    # CSS
+    cat > public/css/style.css << 'CSS_EOF'
+body { font-family: 'Segoe UI', sans-serif; }
+.sidebar .nav-link:hover { background: rgba(255,255,255,0.1); border-radius: 5px; }
+.card { border-radius: 10px; border: none; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+CSS_EOF
+
+    # JS
+    cat > public/js/app.js << 'JS_EOF'
+const socket = io();
+socket.on('connect', () => console.log('Socket.io bağlantısı kuruldu'));
+JS_EOF
+}
+
+# Systemd service oluştur
+create_systemd_service() {
+    log_step "Systemd Service Oluşturuluyor"
+    
+    cat > /etc/systemd/system/asos.service << SERVICE_EOF
+[Unit]
+Description=ASOS Server Management Panel
+After=network.target mongod.service docker.service
+
+[Service]
+Type=simple
+User=asos
+Group=asos
+WorkingDirectory=/opt/asos
+ExecStart=/usr/bin/node src/server.js
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=asos
+Environment=NODE_ENV=production
+
+[Install]
+WantedBy=multi-user.target
+SERVICE_EOF
+    
+    systemctl daemon-reload
+    systemctl enable asos > /dev/null 2>&1
+    systemctl start asos
+    
+    log_success "ASOS servisi oluşturuldu ve başlatıldı"
+}
+
+# Nginx yapılandırması
+configure_nginx() {
+    log_step "Nginx Yapılandırması"
+    
+    cat > /etc/nginx/sites-available/asos << NGINX_EOF
+server {
+    listen 80;
+    server_name $PRIMARY_DOMAIN;
+
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_cache_bypass \$http_upgrade;
+    }
+}
+NGINX_EOF
+    
+    ln -sf /etc/nginx/sites-available/asos /etc/nginx/sites-enabled/
+    rm -f /etc/nginx/sites-enabled/default
+    
+    nginx -t > /dev/null 2>&1 && systemctl reload nginx
+    
+    log_success "Nginx yapılandırıldı"
+}
+
+# SSL kurulumu
+install_ssl() {
+    if [[ "$INSTALL_SSL" != "e" && "$INSTALL_SSL" != "E" ]]; then
+        return
+    fi
+    
+    log_step "SSL Sertifikası Kurulumu"
+    
+    apt install -y -qq certbot python3-certbot-nginx > /dev/null 2>&1
+    
+    log_info "SSL sertifikası alınıyor..."
+    if certbot --nginx -d $PRIMARY_DOMAIN --non-interactive --agree-tos -m $ADMIN_EMAIL > /dev/null 2>&1; then
+        log_success "SSL sertifikası kuruldu"
+    else
+        log_warning "SSL sertifikası alınamadı. DNS ayarlarını kontrol edin."
+        log_info "Manuel kurulum için: sudo certbot --nginx -d $PRIMARY_DOMAIN"
+    fi
+}
+
+# Kurulum özeti
+show_summary() {
+    # Servis durumunu kontrol et
+    sleep 2
+    if systemctl is-active --quiet asos; then
+        STATUS="${GREEN}Çalışıyor${NC}"
+    else
+        STATUS="${RED}Başlatılamadı${NC}"
+    fi
+    
+    # IP adresini al
+    SERVER_IP=$(curl -s ifconfig.me 2>/dev/null || hostname -I | awk '{print $1}')
+    
+    echo ""
+    echo -e "${GREEN}╔═══════════════════════════════════════════════════════════╗${NC}"
+    echo -e "${GREEN}║                                                           ║${NC}"
+    echo -e "${GREEN}║          🎉 ASOS Kurulumu Tamamlandı! 🎉                  ║${NC}"
+    echo -e "${GREEN}║                                                           ║${NC}"
+    echo -e "${GREEN}╚═══════════════════════════════════════════════════════════╝${NC}"
+    echo ""
+    echo -e "${BOLD}Panel Bilgileri:${NC}"
+    echo -e "  URL:        ${CYAN}http://$PRIMARY_DOMAIN${NC}"
+    echo -e "  Alternatif: ${CYAN}http://$SERVER_IP:3000${NC}"
+    echo -e "  Durum:      $STATUS"
+    echo ""
+    echo -e "${BOLD}Giriş Bilgileri:${NC}"
+    echo -e "  E-posta:    ${CYAN}$ADMIN_EMAIL${NC}"
+    echo -e "  Şifre:      ${CYAN}(kurulumda belirlediğiniz şifre)${NC}"
+    echo ""
+    echo -e "${BOLD}Servis Komutları:${NC}"
+    echo -e "  ${YELLOW}sudo systemctl start asos${NC}   - Başlat"
+    echo -e "  ${YELLOW}sudo systemctl stop asos${NC}    - Durdur"
+    echo -e "  ${YELLOW}sudo systemctl restart asos${NC} - Yeniden başlat"
+    echo -e "  ${YELLOW}sudo systemctl status asos${NC}  - Durum"
+    echo -e "  ${YELLOW}sudo journalctl -u asos -f${NC}  - Loglar"
+    echo ""
+    
+    if [[ "$INSTALL_SSL" != "e" && "$INSTALL_SSL" != "E" ]]; then
+        echo -e "${BOLD}SSL Sertifikası için:${NC}"
+        echo -e "  ${YELLOW}sudo certbot --nginx -d $PRIMARY_DOMAIN${NC}"
+        echo ""
+    fi
+    
+    echo -e "${RED}⚠️  ÖNEMLİ:${NC} DNS ayarlarınızda A kaydını sunucu IP'sine yönlendirin!"
+    echo -e "     ${CYAN}$PRIMARY_DOMAIN → $SERVER_IP${NC}"
+    echo ""
+}
+
+# Ana kurulum fonksiyonu
+main() {
+    show_banner
+    check_root
+    check_system
+    interactive_setup
+    
+    echo ""
+    log_step "Kurulum Başlıyor..."
+    
+    install_dependencies
+    install_nodejs
+    install_mongodb
+    install_docker
+    install_nginx
+    install_mail_server
+    configure_firewall
+    install_asos
+    create_systemd_service
+    configure_nginx
+    install_ssl
+    
+    show_summary
+}
+
+# Scripti çalıştır
+main "$@"

@@ -1,0 +1,424 @@
+<!-- Page Title -->
+<div class="row">
+    <div class="col-12">
+        <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+            <h4 class="mb-sm-0">E-posta Yönetimi</h4>
+            <div class="page-title-right">
+                <ol class="breadcrumb m-0">
+                    <li class="breadcrumb-item"><a href="/">ASOS</a></li>
+                    <li class="breadcrumb-item active">E-posta</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header d-flex align-items-center">
+                <h5 class="card-title mb-0 flex-grow-1">E-posta Hesapları</h5>
+                <div class="flex-shrink-0">
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addMailModal">
+                        <i class="ri-mail-add-line align-middle me-1"></i> Yeni Hesap
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-nowrap align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th scope="col">E-posta Adresi</th>
+                                <th scope="col">Domain</th>
+                                <th scope="col">Kota</th>
+                                <th scope="col">Durum</th>
+                                <th scope="col">Oluşturulma</th>
+                                <th scope="col">İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody id="mailAccountsList">
+                            <tr>
+                                <td colspan="6" class="text-center py-4">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Yükleniyor...</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Mail Server Status -->
+<div class="row">
+    <div class="col-xl-4">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="avatar-sm flex-shrink-0">
+                        <span class="avatar-title bg-success-subtle rounded-2">
+                            <i class="ri-mail-send-line text-success fs-22"></i>
+                        </span>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <p class="text-uppercase fw-medium text-muted mb-1">Postfix</p>
+                        <h4 class="fs-18 mb-0" id="postfixStatus">Kontrol ediliyor...</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-4">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="avatar-sm flex-shrink-0">
+                        <span class="avatar-title bg-info-subtle rounded-2">
+                            <i class="ri-mail-download-line text-info fs-22"></i>
+                        </span>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <p class="text-uppercase fw-medium text-muted mb-1">Dovecot</p>
+                        <h4 class="fs-18 mb-0" id="dovecotStatus">Kontrol ediliyor...</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-4">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="avatar-sm flex-shrink-0">
+                        <span class="avatar-title bg-warning-subtle rounded-2">
+                            <i class="ri-spam-line text-warning fs-22"></i>
+                        </span>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <p class="text-uppercase fw-medium text-muted mb-1">SpamAssassin</p>
+                        <h4 class="fs-18 mb-0" id="spamStatus">Kontrol ediliyor...</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Mail Modal -->
+<div class="modal fade" id="addMailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Yeni E-posta Hesabı</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="addMailForm">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Kullanıcı Adı</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" name="username" placeholder="kullanici" required>
+                            <span class="input-group-text">@</span>
+                            <select class="form-select" name="domain" id="domainSelect" required>
+                                <option value="">Domain seçin</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Şifre</label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" name="password" id="mailPassword" required>
+                            <button class="btn btn-outline-secondary" type="button" onclick="generatePassword()">
+                                <i class="ri-refresh-line"></i>
+                            </button>
+                            <button class="btn btn-outline-secondary" type="button" onclick="togglePassword()">
+                                <i class="ri-eye-line" id="passwordToggleIcon"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Kota (MB)</label>
+                        <input type="number" class="form-control" name="quota" value="1024" min="100">
+                        <small class="text-muted">Varsayılan: 1024 MB (1 GB)</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-primary">Oluştur</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    loadMailAccounts();
+    loadDomains();
+    checkMailServices();
+
+    document.getElementById('addMailForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        addMailAccount();
+    });
+});
+
+function loadMailAccounts() {
+    fetch('/api/mail/accounts')
+        .then(r => r.json())
+        .then(data => {
+            var tbody = document.getElementById('mailAccountsList');
+            if (!data.success || !data.data || data.data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4"><i class="ri-mail-line fs-24 d-block mb-2"></i>Henüz e-posta hesabı oluşturulmamış</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = data.data.map(m => `
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div class="avatar-xs me-2 flex-shrink-0">
+                                <span class="avatar-title bg-success-subtle text-success rounded">
+                                    <i class="ri-mail-line"></i>
+                                </span>
+                            </div>
+                            <div>
+                                <h6 class="mb-0">${m.email}</h6>
+                            </div>
+                        </div>
+                    </td>
+                    <td><span class="badge bg-info-subtle text-info">${m.domain}</span></td>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <div class="progress progress-sm">
+                                    <div class="progress-bar bg-primary" style="width: ${(m.usedQuota / m.quota * 100) || 0}%"></div>
+                                </div>
+                            </div>
+                            <div class="flex-shrink-0 ms-2">
+                                <small>${m.usedQuota || 0} / ${m.quota} MB</small>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        ${m.isActive ? 
+                            '<span class="badge bg-success">Aktif</span>' : 
+                            '<span class="badge bg-danger">Pasif</span>'}
+                    </td>
+                    <td>${new Date(m.createdAt).toLocaleDateString('tr-TR')}</td>
+                    <td>
+                        <div class="dropdown">
+                            <button class="btn btn-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                İşlemler
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#" onclick="changePassword('${m._id}')">
+                                    <i class="ri-key-line me-2"></i>Şifre Değiştir
+                                </a></li>
+                                <li><a class="dropdown-item" href="#" onclick="changeQuota('${m._id}', ${m.quota})">
+                                    <i class="ri-hard-drive-line me-2"></i>Kota Değiştir
+                                </a></li>
+                                <li><a class="dropdown-item" href="#" onclick="toggleMailAccount('${m._id}', ${m.isActive})">
+                                    <i class="ri-toggle-line me-2"></i>${m.isActive ? 'Deaktif Et' : 'Aktif Et'}
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="#" onclick="deleteMailAccount('${m._id}')">
+                                    <i class="ri-delete-bin-line me-2"></i>Sil
+                                </a></li>
+                            </ul>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        })
+        .catch(err => {
+            document.getElementById('mailAccountsList').innerHTML = '<tr><td colspan="6" class="text-center text-danger py-4">Yükleme hatası</td></tr>';
+        });
+}
+
+function loadDomains() {
+    fetch('/api/domains')
+        .then(r => r.json())
+        .then(data => {
+            var select = document.getElementById('domainSelect');
+            select.innerHTML = '<option value="">Domain seçin</option>';
+            if (data.success && data.data) {
+                data.data.forEach(d => {
+                    select.innerHTML += `<option value="${d.domain}">${d.domain}</option>`;
+                });
+            }
+        });
+}
+
+function checkMailServices() {
+    fetch('/api/mail/status')
+        .then(r => r.json())
+        .then(data => {
+            if (data.success && data.data) {
+                document.getElementById('postfixStatus').innerHTML = data.data.postfix ? 
+                    '<span class="text-success">Çalışıyor</span>' : '<span class="text-danger">Durdu</span>';
+                document.getElementById('dovecotStatus').innerHTML = data.data.dovecot ? 
+                    '<span class="text-success">Çalışıyor</span>' : '<span class="text-danger">Durdu</span>';
+                document.getElementById('spamStatus').innerHTML = data.data.spamassassin ? 
+                    '<span class="text-success">Çalışıyor</span>' : '<span class="text-danger">Durdu</span>';
+            }
+        })
+        .catch(() => {
+            document.getElementById('postfixStatus').innerHTML = '<span class="text-muted">Bilinmiyor</span>';
+            document.getElementById('dovecotStatus').innerHTML = '<span class="text-muted">Bilinmiyor</span>';
+            document.getElementById('spamStatus').innerHTML = '<span class="text-muted">Bilinmiyor</span>';
+        });
+}
+
+function addMailAccount() {
+    var form = document.getElementById('addMailForm');
+    var formData = new FormData(form);
+    var data = {
+        username: formData.get('username'),
+        domain: formData.get('domain'),
+        password: formData.get('password'),
+        quota: parseInt(formData.get('quota'))
+    };
+
+    fetch('/api/mail/accounts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.success) {
+            bootstrap.Modal.getInstance(document.getElementById('addMailModal')).hide();
+            form.reset();
+            loadMailAccounts();
+            Swal.fire('Başarılı!', 'E-posta hesabı oluşturuldu.', 'success');
+        } else {
+            Swal.fire('Hata!', res.error || 'Hesap oluşturulamadı.', 'error');
+        }
+    })
+    .catch(() => Swal.fire('Hata!', 'Bağlantı hatası', 'error'));
+}
+
+function generatePassword() {
+    var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%';
+    var password = '';
+    for (var i = 0; i < 16; i++) {
+        password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    document.getElementById('mailPassword').value = password;
+    document.getElementById('mailPassword').type = 'text';
+    document.getElementById('passwordToggleIcon').className = 'ri-eye-off-line';
+}
+
+function togglePassword() {
+    var input = document.getElementById('mailPassword');
+    var icon = document.getElementById('passwordToggleIcon');
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'ri-eye-off-line';
+    } else {
+        input.type = 'password';
+        icon.className = 'ri-eye-line';
+    }
+}
+
+function changePassword(id) {
+    Swal.fire({
+        title: 'Şifre Değiştir',
+        input: 'password',
+        inputPlaceholder: 'Yeni şifre',
+        showCancelButton: true,
+        confirmButtonText: 'Değiştir',
+        cancelButtonText: 'İptal'
+    }).then(result => {
+        if (result.isConfirmed && result.value) {
+            fetch(`/api/mail/accounts/${id}/password`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password: result.value })
+            })
+            .then(r => r.json())
+            .then(res => {
+                if (res.success) {
+                    Swal.fire('Başarılı!', 'Şifre değiştirildi.', 'success');
+                } else {
+                    Swal.fire('Hata!', res.error, 'error');
+                }
+            });
+        }
+    });
+}
+
+function changeQuota(id, currentQuota) {
+    Swal.fire({
+        title: 'Kota Değiştir',
+        input: 'number',
+        inputValue: currentQuota,
+        inputPlaceholder: 'Yeni kota (MB)',
+        showCancelButton: true,
+        confirmButtonText: 'Değiştir',
+        cancelButtonText: 'İptal'
+    }).then(result => {
+        if (result.isConfirmed && result.value) {
+            fetch(`/api/mail/accounts/${id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ quota: parseInt(result.value) })
+            })
+            .then(r => r.json())
+            .then(res => {
+                if (res.success) {
+                    loadMailAccounts();
+                    Swal.fire('Başarılı!', 'Kota değiştirildi.', 'success');
+                } else {
+                    Swal.fire('Hata!', res.error, 'error');
+                }
+            });
+        }
+    });
+}
+
+function toggleMailAccount(id, currentStatus) {
+    fetch(`/api/mail/accounts/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isActive: !currentStatus })
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.success) {
+            loadMailAccounts();
+        }
+    });
+}
+
+function deleteMailAccount(id) {
+    Swal.fire({
+        title: 'Emin misiniz?',
+        text: 'Bu e-posta hesabı kalıcı olarak silinecek!',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#f06548',
+        cancelButtonColor: '#878a99',
+        confirmButtonText: 'Evet, Sil',
+        cancelButtonText: 'İptal'
+    }).then(result => {
+        if (result.isConfirmed) {
+            fetch(`/api/mail/accounts/${id}`, { method: 'DELETE' })
+                .then(r => r.json())
+                .then(res => {
+                    if (res.success) {
+                        loadMailAccounts();
+                        Swal.fire('Silindi!', 'E-posta hesabı silindi.', 'success');
+                    } else {
+                        Swal.fire('Hata!', res.error, 'error');
+                    }
+                });
+        }
+    });
+}
+</script>

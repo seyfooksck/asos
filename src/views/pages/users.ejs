@@ -1,0 +1,383 @@
+<!-- Page Title -->
+<div class="row">
+    <div class="col-12">
+        <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+            <h4 class="mb-sm-0">Kullanıcı Yönetimi</h4>
+            <div class="page-title-right">
+                <ol class="breadcrumb m-0">
+                    <li class="breadcrumb-item"><a href="/">ASOS</a></li>
+                    <li class="breadcrumb-item active">Kullanıcılar</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header d-flex align-items-center">
+                <h5 class="card-title mb-0 flex-grow-1">Kullanıcı Listesi</h5>
+                <div class="flex-shrink-0">
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUserModal">
+                        <i class="ri-user-add-line align-middle me-1"></i> Yeni Kullanıcı
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-nowrap align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th scope="col">Kullanıcı</th>
+                                <th scope="col">E-posta</th>
+                                <th scope="col">Rol</th>
+                                <th scope="col">Durum</th>
+                                <th scope="col">Son Giriş</th>
+                                <th scope="col">İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersList">
+                            <tr>
+                                <td colspan="6" class="text-center py-4">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Yükleniyor...</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add User Modal -->
+<div class="modal fade" id="addUserModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Yeni Kullanıcı Ekle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="addUserForm">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Kullanıcı Adı</label>
+                        <input type="text" class="form-control" name="username" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">E-posta</label>
+                        <input type="email" class="form-control" name="email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Şifre</label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" name="password" id="userPassword" required>
+                            <button class="btn btn-outline-secondary" type="button" onclick="generateUserPassword()">
+                                <i class="ri-refresh-line"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Rol</label>
+                        <select class="form-select" name="role">
+                            <option value="admin">Admin</option>
+                            <option value="user">Kullanıcı</option>
+                            <option value="viewer">İzleyici</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-primary">Ekle</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit User Modal -->
+<div class="modal fade" id="editUserModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Kullanıcı Düzenle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="editUserForm">
+                <input type="hidden" name="userId" id="editUserId">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Kullanıcı Adı</label>
+                        <input type="text" class="form-control" name="username" id="editUsername" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">E-posta</label>
+                        <input type="email" class="form-control" name="email" id="editEmail" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Yeni Şifre (değiştirmek istemiyorsanız boş bırakın)</label>
+                        <input type="password" class="form-control" name="password" id="editPassword">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Rol</label>
+                        <select class="form-select" name="role" id="editRole">
+                            <option value="admin">Admin</option>
+                            <option value="user">Kullanıcı</option>
+                            <option value="viewer">İzleyici</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="editIsActive">
+                            <label class="form-check-label" for="editIsActive">Aktif</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-primary">Kaydet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    loadUsers();
+
+    document.getElementById('addUserForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        addUser();
+    });
+
+    document.getElementById('editUserForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        updateUser();
+    });
+});
+
+function loadUsers() {
+    fetch('/api/auth/users')
+        .then(r => r.json())
+        .then(data => {
+            var tbody = document.getElementById('usersList');
+            if (!data.success || !data.data || data.data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4"><i class="ri-user-line fs-24 d-block mb-2"></i>Kullanıcı bulunamadı</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = data.data.map(u => `
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div class="avatar-sm me-2 flex-shrink-0">
+                                <span class="avatar-title bg-primary-subtle text-primary rounded-circle">
+                                    ${u.username.charAt(0).toUpperCase()}
+                                </span>
+                            </div>
+                            <div>
+                                <h6 class="mb-0">${u.username}</h6>
+                            </div>
+                        </div>
+                    </td>
+                    <td>${u.email}</td>
+                    <td>
+                        <span class="badge bg-${u.role === 'admin' ? 'danger' : u.role === 'user' ? 'primary' : 'secondary'}-subtle text-${u.role === 'admin' ? 'danger' : u.role === 'user' ? 'primary' : 'secondary'}">
+                            ${u.role === 'admin' ? 'Admin' : u.role === 'user' ? 'Kullanıcı' : 'İzleyici'}
+                        </span>
+                    </td>
+                    <td>
+                        ${u.isActive ? 
+                            '<span class="badge bg-success">Aktif</span>' : 
+                            '<span class="badge bg-danger">Pasif</span>'}
+                    </td>
+                    <td>${u.lastLogin ? new Date(u.lastLogin).toLocaleString('tr-TR') : 'Hiç giriş yapmadı'}</td>
+                    <td>
+                        <div class="dropdown">
+                            <button class="btn btn-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                İşlemler
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#" onclick="editUser('${u._id}')">
+                                    <i class="ri-edit-line me-2"></i>Düzenle
+                                </a></li>
+                                <li><a class="dropdown-item" href="#" onclick="resetPassword('${u._id}')">
+                                    <i class="ri-key-line me-2"></i>Şifre Sıfırla
+                                </a></li>
+                                <li><a class="dropdown-item" href="#" onclick="toggleUser('${u._id}', ${u.isActive})">
+                                    <i class="ri-toggle-line me-2"></i>${u.isActive ? 'Deaktif Et' : 'Aktif Et'}
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="#" onclick="deleteUser('${u._id}')">
+                                    <i class="ri-delete-bin-line me-2"></i>Sil
+                                </a></li>
+                            </ul>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        })
+        .catch(err => {
+            document.getElementById('usersList').innerHTML = '<tr><td colspan="6" class="text-center text-danger py-4">Yükleme hatası</td></tr>';
+        });
+}
+
+function addUser() {
+    var form = document.getElementById('addUserForm');
+    var formData = new FormData(form);
+    var data = {
+        username: formData.get('username'),
+        email: formData.get('email'),
+        password: formData.get('password'),
+        role: formData.get('role')
+    };
+
+    fetch('/api/auth/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.success) {
+            bootstrap.Modal.getInstance(document.getElementById('addUserModal')).hide();
+            form.reset();
+            loadUsers();
+            Swal.fire('Başarılı!', 'Kullanıcı oluşturuldu.', 'success');
+        } else {
+            Swal.fire('Hata!', res.error || 'Kullanıcı oluşturulamadı.', 'error');
+        }
+    })
+    .catch(() => Swal.fire('Hata!', 'Bağlantı hatası', 'error'));
+}
+
+function editUser(id) {
+    fetch(`/api/auth/users/${id}`)
+        .then(r => r.json())
+        .then(data => {
+            if (data.success && data.data) {
+                var u = data.data;
+                document.getElementById('editUserId').value = u._id;
+                document.getElementById('editUsername').value = u.username;
+                document.getElementById('editEmail').value = u.email;
+                document.getElementById('editRole').value = u.role;
+                document.getElementById('editIsActive').checked = u.isActive;
+                document.getElementById('editPassword').value = '';
+                
+                new bootstrap.Modal(document.getElementById('editUserModal')).show();
+            }
+        });
+}
+
+function updateUser() {
+    var id = document.getElementById('editUserId').value;
+    var data = {
+        username: document.getElementById('editUsername').value,
+        email: document.getElementById('editEmail').value,
+        role: document.getElementById('editRole').value,
+        isActive: document.getElementById('editIsActive').checked
+    };
+
+    var password = document.getElementById('editPassword').value;
+    if (password) {
+        data.password = password;
+    }
+
+    fetch(`/api/auth/users/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.success) {
+            bootstrap.Modal.getInstance(document.getElementById('editUserModal')).hide();
+            loadUsers();
+            Swal.fire('Başarılı!', 'Kullanıcı güncellendi.', 'success');
+        } else {
+            Swal.fire('Hata!', res.error, 'error');
+        }
+    });
+}
+
+function resetPassword(id) {
+    Swal.fire({
+        title: 'Yeni Şifre',
+        input: 'password',
+        inputPlaceholder: 'Yeni şifre girin',
+        showCancelButton: true,
+        confirmButtonText: 'Sıfırla',
+        cancelButtonText: 'İptal'
+    }).then(result => {
+        if (result.isConfirmed && result.value) {
+            fetch(`/api/auth/users/${id}/password`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password: result.value })
+            })
+            .then(r => r.json())
+            .then(res => {
+                if (res.success) {
+                    Swal.fire('Başarılı!', 'Şifre sıfırlandı.', 'success');
+                } else {
+                    Swal.fire('Hata!', res.error, 'error');
+                }
+            });
+        }
+    });
+}
+
+function toggleUser(id, currentStatus) {
+    fetch(`/api/auth/users/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isActive: !currentStatus })
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.success) {
+            loadUsers();
+        }
+    });
+}
+
+function deleteUser(id) {
+    Swal.fire({
+        title: 'Emin misiniz?',
+        text: 'Bu kullanıcı kalıcı olarak silinecek!',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#f06548',
+        cancelButtonColor: '#878a99',
+        confirmButtonText: 'Evet, Sil',
+        cancelButtonText: 'İptal'
+    }).then(result => {
+        if (result.isConfirmed) {
+            fetch(`/api/auth/users/${id}`, { method: 'DELETE' })
+                .then(r => r.json())
+                .then(res => {
+                    if (res.success) {
+                        loadUsers();
+                        Swal.fire('Silindi!', 'Kullanıcı silindi.', 'success');
+                    } else {
+                        Swal.fire('Hata!', res.error, 'error');
+                    }
+                });
+        }
+    });
+}
+
+function generateUserPassword() {
+    var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%';
+    var password = '';
+    for (var i = 0; i < 16; i++) {
+        password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    document.getElementById('userPassword').value = password;
+    document.getElementById('userPassword').type = 'text';
+}
+</script>

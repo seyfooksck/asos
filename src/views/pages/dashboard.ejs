@@ -1,0 +1,419 @@
+<!-- Page Title -->
+<div class="row">
+    <div class="col-12">
+        <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+            <h4 class="mb-sm-0">Dashboard</h4>
+            <div class="page-title-right">
+                <ol class="breadcrumb m-0">
+                    <li class="breadcrumb-item"><a href="javascript: void(0);">ASOS</a></li>
+                    <li class="breadcrumb-item active">Dashboard</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row">
+    <div class="col-xl-3 col-md-6">
+        <div class="card card-animate">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1 overflow-hidden">
+                        <p class="text-uppercase fw-medium text-muted text-truncate mb-0">Aktif Domainler</p>
+                    </div>
+                </div>
+                <div class="d-flex align-items-end justify-content-between mt-4">
+                    <div>
+                        <h4 class="fs-22 fw-semibold ff-secondary mb-4" id="totalDomains">0</h4>
+                        <a href="/domains" class="text-decoration-underline text-primary">Domainleri Yönet</a>
+                    </div>
+                    <div class="avatar-sm flex-shrink-0">
+                        <span class="avatar-title bg-primary-subtle rounded fs-3">
+                            <i class="ri-global-line text-primary"></i>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6">
+        <div class="card card-animate">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1 overflow-hidden">
+                        <p class="text-uppercase fw-medium text-muted text-truncate mb-0">E-posta Hesapları</p>
+                    </div>
+                </div>
+                <div class="d-flex align-items-end justify-content-between mt-4">
+                    <div>
+                        <h4 class="fs-22 fw-semibold ff-secondary mb-4" id="totalMailAccounts">0</h4>
+                        <a href="/mail" class="text-decoration-underline text-success">E-postaları Yönet</a>
+                    </div>
+                    <div class="avatar-sm flex-shrink-0">
+                        <span class="avatar-title bg-success-subtle rounded fs-3">
+                            <i class="ri-mail-line text-success"></i>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6">
+        <div class="card card-animate">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1 overflow-hidden">
+                        <p class="text-uppercase fw-medium text-muted text-truncate mb-0">Çalışan Uygulamalar</p>
+                    </div>
+                </div>
+                <div class="d-flex align-items-end justify-content-between mt-4">
+                    <div>
+                        <h4 class="fs-22 fw-semibold ff-secondary mb-4" id="runningApps">0</h4>
+                        <a href="/apps" class="text-decoration-underline text-info">Uygulamaları Yönet</a>
+                    </div>
+                    <div class="avatar-sm flex-shrink-0">
+                        <span class="avatar-title bg-info-subtle rounded fs-3">
+                            <i class="ri-apps-line text-info"></i>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6">
+        <div class="card card-animate">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1 overflow-hidden">
+                        <p class="text-uppercase fw-medium text-muted text-truncate mb-0">Docker Container</p>
+                    </div>
+                </div>
+                <div class="d-flex align-items-end justify-content-between mt-4">
+                    <div>
+                        <h4 class="fs-22 fw-semibold ff-secondary mb-4" id="dockerContainers">0</h4>
+                        <a href="/docker" class="text-decoration-underline text-warning">Container Yönet</a>
+                    </div>
+                    <div class="avatar-sm flex-shrink-0">
+                        <span class="avatar-title bg-warning-subtle rounded fs-3">
+                            <i class="ri-ship-line text-warning"></i>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- System Resources -->
+<div class="row">
+    <div class="col-xl-4">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title mb-0">CPU Kullanımı</h4>
+            </div>
+            <div class="card-body">
+                <div id="cpuChart"></div>
+                <div class="text-center mt-3">
+                    <h3 class="mb-1" id="cpuPercentage">0%</h3>
+                    <p class="text-muted mb-0">Anlık Kullanım</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-4">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title mb-0">RAM Kullanımı</h4>
+            </div>
+            <div class="card-body">
+                <div id="ramChart"></div>
+                <div class="text-center mt-3">
+                    <h3 class="mb-1" id="ramPercentage">0%</h3>
+                    <p class="text-muted mb-0"><span id="ramUsed">0</span> / <span id="ramTotal">0</span> GB</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-4">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title mb-0">Disk Kullanımı</h4>
+            </div>
+            <div class="card-body">
+                <div id="diskChart"></div>
+                <div class="text-center mt-3">
+                    <h3 class="mb-1" id="diskPercentage">0%</h3>
+                    <p class="text-muted mb-0"><span id="diskUsed">0</span> / <span id="diskTotal">0</span> GB</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activities & Quick Actions -->
+<div class="row">
+    <div class="col-xl-8">
+        <div class="card">
+            <div class="card-header align-items-center d-flex">
+                <h4 class="card-title mb-0 flex-grow-1">Son Aktiviteler</h4>
+                <div class="flex-shrink-0">
+                    <button class="btn btn-soft-primary btn-sm" onclick="refreshActivities()">
+                        <i class="ri-refresh-line align-middle"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive table-card">
+                    <table class="table table-borderless table-centered align-middle table-nowrap mb-0">
+                        <thead class="text-muted table-light">
+                            <tr>
+                                <th scope="col">Olay</th>
+                                <th scope="col">Tip</th>
+                                <th scope="col">Zaman</th>
+                                <th scope="col">Durum</th>
+                            </tr>
+                        </thead>
+                        <tbody id="activitiesTable">
+                            <tr>
+                                <td colspan="4" class="text-center text-muted py-4">
+                                    <i class="ri-time-line fs-24 d-block mb-2"></i>
+                                    Henüz aktivite yok
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-4">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title mb-0">Hızlı İşlemler</h4>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="/domains" class="btn btn-primary">
+                        <i class="ri-add-line me-1"></i> Yeni Domain Ekle
+                    </a>
+                    <a href="/mail" class="btn btn-success">
+                        <i class="ri-mail-add-line me-1"></i> E-posta Hesabı Oluştur
+                    </a>
+                    <a href="/apps" class="btn btn-info">
+                        <i class="ri-apps-2-line me-1"></i> Uygulama Kur
+                    </a>
+                    <button class="btn btn-warning" onclick="restartServices()">
+                        <i class="ri-restart-line me-1"></i> Servisleri Yeniden Başlat
+                    </button>
+                    <a href="/system" class="btn btn-secondary">
+                        <i class="ri-settings-3-line me-1"></i> Sistem Ayarları
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Server Info -->
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title mb-0">Sunucu Bilgisi</h4>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-borderless mb-0">
+                        <tbody>
+                            <tr>
+                                <td class="text-muted">Hostname</td>
+                                <td class="fw-medium" id="serverHostname">-</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">IP Adresi</td>
+                                <td class="fw-medium" id="serverIP">-</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">İşletim Sistemi</td>
+                                <td class="fw-medium" id="serverOS">-</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">Uptime</td>
+                                <td class="fw-medium" id="serverUptime">-</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">ASOS Versiyon</td>
+                                <td class="fw-medium" id="asosVersion">-</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Dashboard Charts
+var cpuChart, ramChart, diskChart;
+
+document.addEventListener('DOMContentLoaded', function() {
+    initCharts();
+    loadDashboardData();
+    
+    // Auto refresh every 5 seconds
+    setInterval(loadDashboardData, 5000);
+});
+
+function initCharts() {
+    var chartOptions = {
+        series: [0],
+        chart: {
+            type: 'radialBar',
+            height: 200,
+            sparkline: { enabled: true }
+        },
+        plotOptions: {
+            radialBar: {
+                hollow: { size: '60%' },
+                track: { background: '#f3f3f9' },
+                dataLabels: { show: false }
+            }
+        },
+        colors: ['#405189']
+    };
+
+    cpuChart = new ApexCharts(document.querySelector("#cpuChart"), { ...chartOptions, colors: ['#405189'] });
+    ramChart = new ApexCharts(document.querySelector("#ramChart"), { ...chartOptions, colors: ['#0ab39c'] });
+    diskChart = new ApexCharts(document.querySelector("#diskChart"), { ...chartOptions, colors: ['#f7b84b'] });
+
+    cpuChart.render();
+    ramChart.render();
+    diskChart.render();
+}
+
+function loadDashboardData() {
+    fetch('/api/system/stats')
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                // Update CPU
+                cpuChart.updateSeries([data.data.cpu || 0]);
+                document.getElementById('cpuPercentage').textContent = (data.data.cpu || 0).toFixed(1) + '%';
+                document.getElementById('cpuUsage').textContent = (data.data.cpu || 0).toFixed(1) + '%';
+
+                // Update RAM
+                var ramPercent = data.data.memory ? (data.data.memory.usedPercent || 0) : 0;
+                ramChart.updateSeries([ramPercent]);
+                document.getElementById('ramPercentage').textContent = ramPercent.toFixed(1) + '%';
+                document.getElementById('ramUsage').textContent = ramPercent.toFixed(1) + '%';
+                document.getElementById('ramUsed').textContent = ((data.data.memory?.used || 0) / 1024 / 1024 / 1024).toFixed(1);
+                document.getElementById('ramTotal').textContent = ((data.data.memory?.total || 0) / 1024 / 1024 / 1024).toFixed(1);
+
+                // Update Disk
+                var diskPercent = data.data.disk ? (data.data.disk.usedPercent || 0) : 0;
+                diskChart.updateSeries([diskPercent]);
+                document.getElementById('diskPercentage').textContent = diskPercent.toFixed(1) + '%';
+                document.getElementById('diskUsage').textContent = diskPercent.toFixed(1) + '%';
+                document.getElementById('diskUsed').textContent = ((data.data.disk?.used || 0) / 1024 / 1024 / 1024).toFixed(1);
+                document.getElementById('diskTotal').textContent = ((data.data.disk?.total || 0) / 1024 / 1024 / 1024).toFixed(1);
+
+                // Update server status
+                document.getElementById('serverStatus').textContent = 'Çalışıyor';
+                document.getElementById('serverStatus').className = 'd-none d-xl-block ms-1 fs-12 text-success user-name-sub-text';
+            }
+        })
+        .catch(err => {
+            document.getElementById('serverStatus').textContent = 'Bağlantı Hatası';
+            document.getElementById('serverStatus').className = 'd-none d-xl-block ms-1 fs-12 text-danger user-name-sub-text';
+        });
+
+    // Load counts
+    fetch('/api/domains').then(r => r.json()).then(d => {
+        document.getElementById('totalDomains').textContent = d.data?.length || 0;
+    }).catch(() => {});
+
+    fetch('/api/mail/accounts').then(r => r.json()).then(d => {
+        document.getElementById('totalMailAccounts').textContent = d.data?.length || 0;
+    }).catch(() => {});
+
+    fetch('/api/apps/installed').then(r => r.json()).then(d => {
+        var running = (d.data || []).filter(a => a.status === 'running').length;
+        document.getElementById('runningApps').textContent = running;
+    }).catch(() => {});
+
+    fetch('/api/docker/containers').then(r => r.json()).then(d => {
+        document.getElementById('dockerContainers').textContent = d.data?.length || 0;
+    }).catch(() => {});
+
+    // Load server info
+    fetch('/api/system/info').then(r => r.json()).then(d => {
+        if (d.success && d.data) {
+            document.getElementById('serverHostname').textContent = d.data.hostname || '-';
+            document.getElementById('serverIP').textContent = d.data.ip || '-';
+            document.getElementById('serverOS').textContent = d.data.os || '-';
+            document.getElementById('serverUptime').textContent = formatUptime(d.data.uptime || 0);
+            document.getElementById('asosVersion').textContent = d.data.version || '-';
+        }
+    }).catch(() => {});
+
+    // Check for updates
+    checkForUpdates();
+}
+
+function formatUptime(seconds) {
+    var days = Math.floor(seconds / 86400);
+    var hours = Math.floor((seconds % 86400) / 3600);
+    var minutes = Math.floor((seconds % 3600) / 60);
+    
+    if (days > 0) return days + ' gün ' + hours + ' saat';
+    if (hours > 0) return hours + ' saat ' + minutes + ' dk';
+    return minutes + ' dakika';
+}
+
+function checkForUpdates() {
+    fetch('/api/system/check-update')
+        .then(r => r.json())
+        .then(d => {
+            if (d.success && d.data.updateAvailable) {
+                document.getElementById('updateDropdown').style.display = 'block';
+                document.getElementById('newVersion').textContent = d.data.latestVersion;
+                document.getElementById('currentVersion').textContent = d.data.currentVersion;
+            }
+        })
+        .catch(() => {});
+}
+
+function restartServices() {
+    Swal.fire({
+        title: 'Emin misiniz?',
+        text: 'Tüm ASOS servisleri yeniden başlatılacak.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#405189',
+        cancelButtonColor: '#f06548',
+        confirmButtonText: 'Evet, Yeniden Başlat',
+        cancelButtonText: 'İptal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch('/api/system/restart', { method: 'POST' })
+                .then(r => r.json())
+                .then(d => {
+                    if (d.success) {
+                        Swal.fire('Başarılı!', 'Servisler yeniden başlatılıyor...', 'success');
+                    } else {
+                        Swal.fire('Hata!', d.error || 'Bir hata oluştu', 'error');
+                    }
+                })
+                .catch(() => Swal.fire('Hata!', 'Bağlantı hatası', 'error'));
+        }
+    });
+}
+
+function refreshActivities() {
+    // Placeholder for activities refresh
+}
+</script>

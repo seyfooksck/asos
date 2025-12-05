@@ -1,0 +1,25 @@
+<%# Toast Notification %>
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+  <div id="toast" class="toast" role="alert">
+    <div class="toast-header">
+      <strong class="me-auto" id="toastTitle">Bildirim</strong>
+      <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+    </div>
+    <div class="toast-body" id="toastBody"></div>
+  </div>
+</div>
+
+<script>
+function showToast(title, message, type = 'info') {
+  const toast = document.getElementById('toast');
+  const toastTitle = document.getElementById('toastTitle');
+  const toastBody = document.getElementById('toastBody');
+
+  toast.className = `toast bg-${type} text-white`;
+  toastTitle.textContent = title;
+  toastBody.textContent = message;
+
+  const bsToast = new bootstrap.Toast(toast);
+  bsToast.show();
+}
+</script>

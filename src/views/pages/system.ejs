@@ -1,0 +1,559 @@
+<!-- Page Title -->
+<div class="row">
+    <div class="col-12">
+        <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+            <h4 class="mb-sm-0">Sistem Ayarları</h4>
+            <div class="page-title-right">
+                <ol class="breadcrumb m-0">
+                    <li class="breadcrumb-item"><a href="/">ASOS</a></li>
+                    <li class="breadcrumb-item active">Sistem</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- System Info Cards -->
+<div class="row">
+    <div class="col-xl-3 col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="avatar-sm flex-shrink-0">
+                        <span class="avatar-title bg-primary-subtle rounded-2">
+                            <i class="ri-server-line text-primary fs-22"></i>
+                        </span>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <p class="text-uppercase fw-medium text-muted mb-1">Hostname</p>
+                        <h5 class="fs-16 mb-0" id="sysHostname">-</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="avatar-sm flex-shrink-0">
+                        <span class="avatar-title bg-success-subtle rounded-2">
+                            <i class="ri-time-line text-success fs-22"></i>
+                        </span>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <p class="text-uppercase fw-medium text-muted mb-1">Uptime</p>
+                        <h5 class="fs-16 mb-0" id="sysUptime">-</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="avatar-sm flex-shrink-0">
+                        <span class="avatar-title bg-info-subtle rounded-2">
+                            <i class="ri-ubuntu-line text-info fs-22"></i>
+                        </span>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <p class="text-uppercase fw-medium text-muted mb-1">İşletim Sistemi</p>
+                        <h5 class="fs-16 mb-0" id="sysOS">-</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="avatar-sm flex-shrink-0">
+                        <span class="avatar-title bg-warning-subtle rounded-2">
+                            <i class="ri-code-s-slash-line text-warning fs-22"></i>
+                        </span>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <p class="text-uppercase fw-medium text-muted mb-1">ASOS Versiyon</p>
+                        <h5 class="fs-16 mb-0" id="sysVersion">-</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Services -->
+    <div class="col-xl-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Servis Durumu</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-borderless align-middle mb-0">
+                        <tbody id="servicesTable">
+                            <tr>
+                                <td colspan="3" class="text-center py-4">
+                                    <div class="spinner-border text-primary spinner-border-sm" role="status"></div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Update -->
+    <div class="col-xl-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Güncelleme</h5>
+            </div>
+            <div class="card-body">
+                <div id="updateSection">
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status"></div>
+                        <p class="mt-2 mb-0">Güncellemeler kontrol ediliyor...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Backup -->
+    <div class="col-xl-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Yedekleme</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Tüm verilerinizi ve ayarlarınızı yedekleyin.</p>
+                <div class="d-grid gap-2">
+                    <button class="btn btn-primary" onclick="createBackup()">
+                        <i class="ri-download-cloud-line me-1"></i> Yedek Oluştur
+                    </button>
+                    <button class="btn btn-outline-primary" onclick="restoreBackup()">
+                        <i class="ri-upload-cloud-line me-1"></i> Yedekten Geri Yükle
+                    </button>
+                </div>
+
+                <hr>
+
+                <h6>Son Yedekler</h6>
+                <div id="backupsList" class="list-group list-group-flush">
+                    <div class="text-center text-muted py-3">Yedek bulunamadı</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Logs -->
+    <div class="col-xl-6">
+        <div class="card">
+            <div class="card-header d-flex align-items-center">
+                <h5 class="card-title mb-0 flex-grow-1">Sistem Logları</h5>
+                <div class="flex-shrink-0">
+                    <button class="btn btn-sm btn-soft-primary" onclick="loadSystemLogs()">
+                        <i class="ri-refresh-line"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <pre id="systemLogs" class="bg-dark text-light p-3 rounded" style="max-height: 300px; overflow-y: auto; font-size: 11px;">Loglar yükleniyor...</pre>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Settings -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Genel Ayarlar</h5>
+            </div>
+            <div class="card-body">
+                <form id="settingsForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Panel Port</label>
+                                <input type="number" class="form-control" name="port" id="settingPort" value="3000">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Session Süresi (dakika)</label>
+                                <input type="number" class="form-control" name="sessionTimeout" id="settingSession" value="60">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="settingSSL" checked>
+                                    <label class="form-check-label" for="settingSSL">SSL Aktif</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="settingAutoUpdate">
+                                    <label class="form-check-label" for="settingAutoUpdate">Otomatik Güncelleme</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="ri-save-line me-1"></i> Ayarları Kaydet
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Danger Zone -->
+<div class="row">
+    <div class="col-12">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <h5 class="card-title mb-0 text-white">Tehlikeli Bölge</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Servisleri Yeniden Başlat</h6>
+                        <p class="text-muted small">Tüm ASOS servislerini yeniden başlatır. Bu işlem sırasında kısa bir kesinti yaşanabilir.</p>
+                        <button class="btn btn-warning" onclick="restartServices()">
+                            <i class="ri-restart-line me-1"></i> Servisleri Yeniden Başlat
+                        </button>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Sunucuyu Yeniden Başlat</h6>
+                        <p class="text-muted small">Sunucuyu tamamen yeniden başlatır. Bu işlem birkaç dakika sürebilir.</p>
+                        <button class="btn btn-danger" onclick="rebootServer()">
+                            <i class="ri-shut-down-line me-1"></i> Sunucuyu Yeniden Başlat
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    loadSystemInfo();
+    loadServices();
+    checkUpdates();
+    loadSystemLogs();
+
+    document.getElementById('settingsForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        saveSettings();
+    });
+});
+
+function loadSystemInfo() {
+    fetch('/api/system/info')
+        .then(r => r.json())
+        .then(data => {
+            if (data.success && data.data) {
+                document.getElementById('sysHostname').textContent = data.data.hostname || '-';
+                document.getElementById('sysUptime').textContent = formatUptime(data.data.uptime || 0);
+                document.getElementById('sysOS').textContent = data.data.os || '-';
+                document.getElementById('sysVersion').textContent = data.data.version || '-';
+            }
+        });
+}
+
+function loadServices() {
+    var services = [
+        { name: 'ASOS Panel', service: 'asos', icon: 'ri-dashboard-line' },
+        { name: 'Nginx', service: 'nginx', icon: 'ri-server-line' },
+        { name: 'Docker', service: 'docker', icon: 'ri-ship-line' },
+        { name: 'MongoDB', service: 'mongod', icon: 'ri-database-line' },
+        { name: 'Postfix', service: 'postfix', icon: 'ri-mail-send-line' },
+        { name: 'Dovecot', service: 'dovecot', icon: 'ri-mail-download-line' }
+    ];
+
+    fetch('/api/system/services')
+        .then(r => r.json())
+        .then(data => {
+            var tbody = document.getElementById('servicesTable');
+            var serviceStatus = data.data || {};
+
+            tbody.innerHTML = services.map(s => {
+                var status = serviceStatus[s.service];
+                var isRunning = status === 'running' || status === true;
+                
+                return `
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="avatar-xs me-2">
+                                    <span class="avatar-title bg-light rounded">
+                                        <i class="${s.icon} text-primary"></i>
+                                    </span>
+                                </div>
+                                <span class="fw-medium">${s.name}</span>
+                            </div>
+                        </td>
+                        <td>
+                            ${isRunning ? 
+                                '<span class="badge bg-success-subtle text-success">Çalışıyor</span>' : 
+                                '<span class="badge bg-danger-subtle text-danger">Durdu</span>'}
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-soft-${isRunning ? 'warning' : 'success'}" onclick="toggleService('${s.service}', ${isRunning})">
+                                <i class="ri-${isRunning ? 'stop' : 'play'}-circle-line"></i>
+                            </button>
+                            <button class="btn btn-sm btn-soft-info" onclick="restartService('${s.service}')">
+                                <i class="ri-restart-line"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        })
+        .catch(() => {
+            document.getElementById('servicesTable').innerHTML = '<tr><td colspan="3" class="text-center text-muted">Servis durumu alınamadı</td></tr>';
+        });
+}
+
+function checkUpdates() {
+    fetch('/api/system/check-update')
+        .then(r => r.json())
+        .then(data => {
+            var section = document.getElementById('updateSection');
+            
+            if (data.success && data.data.updateAvailable) {
+                section.innerHTML = `
+                    <div class="alert alert-warning mb-3">
+                        <i class="ri-error-warning-line me-2"></i>
+                        <strong>Yeni güncelleme mevcut!</strong>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <span class="text-muted">Mevcut:</span>
+                            <span class="fw-medium">${data.data.currentVersion}</span>
+                        </div>
+                        <i class="ri-arrow-right-line text-muted"></i>
+                        <div>
+                            <span class="text-muted">Yeni:</span>
+                            <span class="fw-medium text-success">${data.data.latestVersion}</span>
+                        </div>
+                    </div>
+                    <button class="btn btn-success w-100" onclick="performUpdate()">
+                        <i class="ri-download-line me-1"></i> Güncelle
+                    </button>
+                `;
+            } else {
+                section.innerHTML = `
+                    <div class="text-center py-3">
+                        <i class="ri-checkbox-circle-line fs-48 text-success"></i>
+                        <h5 class="mt-2">Güncelsiniz!</h5>
+                        <p class="text-muted mb-0">Versiyon: ${data.data?.currentVersion || '-'}</p>
+                    </div>
+                    <button class="btn btn-outline-primary w-100 mt-3" onclick="checkUpdates()">
+                        <i class="ri-refresh-line me-1"></i> Tekrar Kontrol Et
+                    </button>
+                `;
+            }
+        })
+        .catch(() => {
+            document.getElementById('updateSection').innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="ri-error-warning-line me-2"></i>
+                    Güncelleme kontrolü yapılamadı.
+                </div>
+            `;
+        });
+}
+
+function performUpdate() {
+    Swal.fire({
+        title: 'Güncelleme Başlatılsın mı?',
+        text: 'Panel güncelleme sırasında kısa bir süre kullanılamayacak.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Evet, Güncelle',
+        cancelButtonText: 'İptal'
+    }).then(result => {
+        if (result.isConfirmed) {
+            Swal.fire({
+                title: 'Güncelleniyor...',
+                text: 'Lütfen bekleyin, sayfa otomatik yenilenecek.',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
+
+            fetch('/api/system/update', { method: 'POST' })
+                .then(r => r.json())
+                .then(res => {
+                    if (res.success) {
+                        setTimeout(() => location.reload(), 10000);
+                    } else {
+                        Swal.fire('Hata!', res.error, 'error');
+                    }
+                })
+                .catch(() => {
+                    setTimeout(() => location.reload(), 10000);
+                });
+        }
+    });
+}
+
+function loadSystemLogs() {
+    fetch('/api/system/logs')
+        .then(r => r.json())
+        .then(data => {
+            document.getElementById('systemLogs').textContent = data.data || 'Log bulunamadı.';
+        })
+        .catch(() => {
+            document.getElementById('systemLogs').textContent = 'Loglar yüklenemedi.';
+        });
+}
+
+function toggleService(service, isRunning) {
+    var action = isRunning ? 'stop' : 'start';
+    fetch(`/api/system/services/${service}/${action}`, { method: 'POST' })
+        .then(r => r.json())
+        .then(res => {
+            if (res.success) {
+                loadServices();
+            } else {
+                Swal.fire('Hata!', res.error, 'error');
+            }
+        });
+}
+
+function restartService(service) {
+    fetch(`/api/system/services/${service}/restart`, { method: 'POST' })
+        .then(r => r.json())
+        .then(res => {
+            if (res.success) {
+                loadServices();
+                Swal.fire('Başarılı!', 'Servis yeniden başlatıldı.', 'success');
+            } else {
+                Swal.fire('Hata!', res.error, 'error');
+            }
+        });
+}
+
+function restartServices() {
+    Swal.fire({
+        title: 'Emin misiniz?',
+        text: 'Tüm ASOS servisleri yeniden başlatılacak.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Evet',
+        cancelButtonText: 'İptal'
+    }).then(result => {
+        if (result.isConfirmed) {
+            fetch('/api/system/restart', { method: 'POST' })
+                .then(r => r.json())
+                .then(res => {
+                    if (res.success) {
+                        Swal.fire('Başarılı!', 'Servisler yeniden başlatılıyor...', 'success');
+                        setTimeout(() => location.reload(), 5000);
+                    }
+                });
+        }
+    });
+}
+
+function rebootServer() {
+    Swal.fire({
+        title: 'Sunucu Yeniden Başlatılsın mı?',
+        text: 'Bu işlem tüm servisleri durduracak ve sunucuyu yeniden başlatacak!',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#f06548',
+        confirmButtonText: 'Evet, Yeniden Başlat',
+        cancelButtonText: 'İptal'
+    }).then(result => {
+        if (result.isConfirmed) {
+            fetch('/api/system/reboot', { method: 'POST' })
+                .then(() => {
+                    Swal.fire('Sunucu Yeniden Başlatılıyor', 'Birkaç dakika içinde tekrar bağlanabilirsiniz.', 'info');
+                });
+        }
+    });
+}
+
+function createBackup() {
+    Swal.fire({
+        title: 'Yedek Oluşturuluyor...',
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading()
+    });
+
+    fetch('/api/system/backup', { method: 'POST' })
+        .then(r => r.json())
+        .then(res => {
+            if (res.success) {
+                Swal.fire('Başarılı!', 'Yedek oluşturuldu.', 'success');
+            } else {
+                Swal.fire('Hata!', res.error, 'error');
+            }
+        });
+}
+
+function restoreBackup() {
+    Swal.fire({
+        title: 'Yedek Dosyası Seç',
+        input: 'file',
+        inputAttributes: { accept: '.tar.gz,.zip' },
+        showCancelButton: true,
+        confirmButtonText: 'Geri Yükle',
+        cancelButtonText: 'İptal'
+    }).then(result => {
+        if (result.isConfirmed && result.value) {
+            // Handle file upload and restore
+            Swal.fire('Bilgi', 'Geri yükleme özelliği yakında eklenecek.', 'info');
+        }
+    });
+}
+
+function saveSettings() {
+    var data = {
+        port: document.getElementById('settingPort').value,
+        sessionTimeout: document.getElementById('settingSession').value,
+        sslEnabled: document.getElementById('settingSSL').checked,
+        autoUpdate: document.getElementById('settingAutoUpdate').checked
+    };
+
+    fetch('/api/system/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.success) {
+            Swal.fire('Başarılı!', 'Ayarlar kaydedildi.', 'success');
+        } else {
+            Swal.fire('Hata!', res.error, 'error');
+        }
+    });
+}
+
+function formatUptime(seconds) {
+    var days = Math.floor(seconds / 86400);
+    var hours = Math.floor((seconds % 86400) / 3600);
+    var minutes = Math.floor((seconds % 3600) / 60);
+    
+    if (days > 0) return days + ' gün ' + hours + ' saat';
+    if (hours > 0) return hours + ' saat ' + minutes + ' dk';
+    return minutes + ' dakika';
+}
+</script>
